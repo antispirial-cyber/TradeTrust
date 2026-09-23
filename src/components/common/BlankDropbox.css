@@ -1,0 +1,34 @@
+.blank-dropbox {
+  width: 100%;
+  height: 64px;
+  border: 2px dashed var(--border-color);
+  border-radius: var(--card-radius);
+  background-color: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+.blank-dropbox:hover, .blank-dropbox.is-dragging {
+  border-color: var(--accent-color);
+  background-color: var(--accent-muted);
+}
+
+.blank-dropbox-input {
+  display: none;
+}
+
+.blank-dropbox-preview {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--accent-color);
+  max-width: 90%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

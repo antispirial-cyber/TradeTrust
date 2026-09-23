@@ -1,0 +1,180 @@
+.ledger-tab-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.ledger-balance-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.ledger-balance-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.ledger-balance-label {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ledger-balance-amount {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.ledger-balance-amount.given {
+  color: var(--status-success);
+}
+
+.ledger-balance-amount.received {
+  color: var(--status-pending);
+}
+
+.ledger-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ledger-privacy-note {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.ledger-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background-color: var(--accent-color);
+  color: var(--text-primary);
+  padding: 8px var(--space-md);
+  border-radius: var(--button-radius);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.ledger-add-btn:hover {
+  filter: brightness(1.1);
+}
+
+/* Ledger Table */
+.ledger-table-wrapper {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  overflow-x: auto;
+}
+
+.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.ledger-table th {
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.ledger-table td {
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.ledger-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ledger-table tr:hover td {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.ledger-type-badge {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.ledger-type-badge.given {
+  background-color: rgba(45, 198, 83, 0.15);
+  color: var(--status-success);
+}
+
+.ledger-type-badge.received {
+  background-color: rgba(244, 211, 94, 0.15);
+  color: var(--status-pending);
+}
+
+.ledger-status-pill {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  display: inline-block;
+}
+
+.ledger-status-pill.PENDING {
+  background-color: rgba(244, 211, 94, 0.15);
+  color: var(--status-pending);
+}
+
+.ledger-status-pill.PAID {
+  background-color: rgba(45, 198, 83, 0.15);
+  color: var(--status-success);
+}
+
+.ledger-status-pill.OVERDUE {
+  background-color: rgba(214, 40, 40, 0.15);
+  color: var(--status-danger);
+}
+
+.ledger-table-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.ledger-icon-action {
+  color: var(--text-secondary);
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.ledger-icon-action:hover {
+  color: var(--text-primary);
+}
+
+.ledger-icon-action.delete:hover {
+  color: var(--status-danger);
+}
+
+@media (max-width: 768px) {
+  .ledger-balance-row {
+    grid-template-columns: 1fr;
+  }
+}

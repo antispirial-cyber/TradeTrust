@@ -1,0 +1,61 @@
+.score-ring-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  user-select: none;
+  background-color: var(--bg-card);
+}
+
+.score-ring-container.clickable {
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.score-ring-container.clickable:hover {
+  transform: scale(1.04);
+}
+
+.score-ring-svg {
+  display: block;
+}
+
+.score-ring-bg-track {
+  stroke: var(--border-color);
+  fill: none;
+}
+
+.score-ring-progress {
+  fill: none;
+  transition: stroke-dashoffset 800ms ease, stroke 800ms ease, filter 800ms ease;
+}
+
+.score-ring-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.score-ring-value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.score-ring-scale {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin-top: var(--space-xs);
+  line-height: 1;
+}

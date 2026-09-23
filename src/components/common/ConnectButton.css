@@ -1,0 +1,44 @@
+.connect-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  width: 100%;
+  padding: 8px var(--space-md);
+  border-radius: var(--button-radius);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+/* Not Connected: Filled Accent */
+.connect-btn.not-connected {
+  background-color: var(--accent-color);
+  color: var(--text-primary);
+  border: 1px solid var(--accent-color);
+}
+
+.connect-btn.not-connected:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 2px 8px var(--accent-muted);
+}
+
+/* Connected: Outlined Green */
+.connect-btn.connected {
+  background-color: transparent;
+  color: var(--status-success);
+  border: 1px solid var(--status-success);
+}
+
+.connect-btn.connected:hover {
+  background-color: rgba(45, 198, 83, 0.1);
+}
+
+/* Pending: Outlined Muted */
+.connect-btn.pending {
+  background-color: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  cursor: not-allowed;
+}

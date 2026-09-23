@@ -1,0 +1,147 @@
+TRADETRUST — BUILD PHASES
+=========================
+
+Build in this order. Do not start the next phase until the current one
+works end to end. Each phase has a clear done-when condition.
+
+
+PHASE 0 — SETUP
+---------------
+Goal: frontend and backend talk to each other. Database exists.
+
+- Create MySQL database tradetrust_db. Run schema.sql. Verify tables exist.
+- Create Spring Boot Maven project. Add dependencies. Test JDBC connection
+  with a simple main() that prints "Connected".
+- Set application.properties:
+    server.port=8080
+    spring.servlet.multipart.max-file-size=5MB
+- Create React app. Install React Router DOM v6.
+  Set up folder structure: pages/ components/ api/ styles/
+  Create variables.css with all CSS tokens.
+  Configure proxy: forward /api/* to localhost:8080.
+- Create GET /api/ping that returns { "success": true, "message": "pong" }
+  Call it from React and display the response on screen.
+
+Done when: React shows "pong" fetched live from Spring Boot.
+
+
+PHASE 1 — AUTH
+--------------
+Goal: register, login, logout work. Sessions work.
+
+- AuthServlet: register (hash password, insert trader + default settings),
+  login (validate, create session, return trader object), logout.
+- AdminServlet: admin login only.
+- LoginPage.jsx: two tabs, register form, login form.
+  On success: store trader in React context, redirect to /dashboard.
+- Protected route wrapper: redirect to /login if no session.
+- Admin route wrapper: redirect to /admin/login if no admin session.
+
+Done when: user can register, login, see empty dashboard, logout.
+           Admin can login, see empty admin panel.
+
+
+PHASE 2 — PROFILES AND BROWSE
+------------------------------
+Goal: traders have profiles. Browse page works.
+
+- TraderServlet: GET /api/trader/{id} (public profile),
+  PUT /api/trader/update (own profile only).
+- BrowseServlet: GET /api/browse with cluster/sector/role/search/page params.
+  Dynamic WHERE clause built in Java. Returns paginated trader cards.
+- UploadServlet: handle shop photo upload, update traders.photo_path.
+- DashboardPage Profile tab: score ring, photo, editable fields.
+- BrowsePage: search bar, filters, card grid. Click card goes to /profile/:id.
+- PublicProfilePage: full read-only view of another trader.
+
+Done when: browse page shows traders, search and filters work,
+           profile editing saves correctly.
+
+
+PHASE 3 — LEDGER
+----------------
+Goal: private ledger with add/edit/delete and live balance.
+
+- LedgerServlet: full CRUD for ledger entries.
+  GET returns all entries for session trader only.
+  POST/PUT/DELETE validate ownership before touching data.
+- Ledger tab: table of entries, running balance at top,
+  Add Entry button with form (date auto-fills today),
+  edit and delete row actions.
+
+Done when: user can add, edit, delete entries. Balance updates correctly.
+
+
+PHASE 4 — COMPLAINTS
+--------------------
+Goal: full complaint flow from filing to admin verdict.
+
+- ComplaintServlet: file complaint (freeze score, notify reported trader),
+  counter-raise (update status, notify other party, auto-escalate after
+  round 2 on both sides).
+- AdminServlet verdict: approve (update score, add to Past Records, notify
+  both) or reject (restore frozen score, notify both).
+- ComplaintModal: 3-step modal (description, proof upload, review + submit).
+- Complaint thread view: shows full conversation, counter form if it is
+  user's turn and rounds remain.
+- Past Records tab on dashboard and public profile.
+
+Done when: full complaint loop works. Admin can approve/reject.
+           Score updates. Past Records populate correctly.
+
+
+PHASE 5 — CONNECTIONS AND NOTIFICATIONS
+----------------------------------------
+Goal: connect flow works. Notifications fire for all events.
+
+- ConnectionServlet: send request, respond (accept/decline), list connections.
+  On accept: create notification for requester.
+- NotificationServlet: get all for user (newest first), mark as read.
+  Return unread count separately.
+- Notification bell in navbar: red badge with count, links to /notifications.
+- Connect button states: Connect → Pending → Connected.
+- Mutual connection count on browse cards and public profiles.
+
+Done when: connections work end to end. Bell badge updates.
+           All notification types defined in PRD fire correctly.
+
+
+PHASE 6 — SETTINGS
+-------------------
+Goal: account edits save. Accent color updates live across the whole UI.
+
+- TraderServlet settings: PUT /api/trader/settings saves accent_color.
+- SettingsPage: account details form (saves to backend), color picker section
+  (swatches + hex input, updates --accent-color on :root immediately,
+  save button persists to backend).
+- On app load: fetch user's saved accent_color and apply to :root.
+
+Done when: color change persists across sessions. Account details update.
+
+
+PHASE 7 — ADMIN PANEL
+----------------------
+Goal: admin can review and verdict all complaints.
+
+- AdminPanel.jsx: complaint queue on left, expanded thread on right.
+  Full thread shows all rounds and proof images inline.
+  Approve/Reject buttons with confirmation dialog.
+  Broadcast notification form at bottom.
+
+Done when: admin can log in, see complaints, approve/reject, broadcast.
+
+
+PHASE 8 — POLISH AND DEMO PREP
+--------------------------------
+Goal: platform is demo-ready with real-looking seed data.
+
+- Seed data: 10 to 15 traders across 2 clusters and 3 sectors.
+  Mix of scores, some with verified badges, some with approved complaints,
+  2 to 3 connections between traders, sample ledger entries for one trader.
+- Empty states: every list shows a friendly message when empty.
+- Score ring edge cases: 0 full red, 10 full green, frozen shows pre-freeze.
+- Test all pages at 375px mobile and 1280px desktop.
+- Walk through full demo: browse, search, view profile, file complaint,
+  admin verdict, score change, ledger add. Should take under 10 minutes.
+
+Done when: a clean demo can be run without hitting any broken state.
