@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ScoreRing } from '../components/common/ScoreRing';
 import { VerifiedBadge } from '../components/common/VerifiedBadge';
 import { PinIcon } from '../components/common/Icons';
@@ -11,12 +11,14 @@ import { useToast } from '../context/ToastContext';
 import './DashboardPage.css';
 
 export function DashboardPage() {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const { showToast } = useToast();
+  const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('profile');
   const [isPastRecordsUnlocked, setIsPastRecordsUnlocked] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
 
   // Sync tab with URL query parameter ?tab=ledger
   useEffect(() => {
@@ -50,23 +52,53 @@ export function DashboardPage() {
     }
   };
 
+  const handleQuickDemoLogin = async () => {
+    setSigningIn(true);
+    try {
+      const res = await login({ phone: '9820012345', password: 'password123' });
+      if (res.success) {
+        showToast('Signed in as Rajesh Mehta (Seed Account)');
+      } else {
+        navigate('/login');
+      }
+    } catch {
+      navigate('/login');
+    } finally {
+      setSigningIn(false);
+    }
+  };
+
   if (!user) {
     return (
-      <div style={{ textAlign: 'center', padding: 'var(--space-xl)', color: 'var(--text-secondary)' }}>
-        <h2 style={{ color: 'var(--text-primary)', marginBottom: 'var(--space-sm)' }}>Not Signed In Yet</h2>
-        <p style={{ marginBottom: 'var(--space-md)' }}>Please log in to access your personal business profile and private credit ledger.</p>
-        <button
-          type="button"
-          className="modal-btn-primary"
-          onClick={(e) => showComingSoon(e)}
-        >
-          Log in / Sign up
-        </button>
+      <div style={{ textAlign: 'center', padding: 'var(--space-2xl) var(--space-xl)', color: 'var(--text-secondary)', maxWidth: '520px', margin: '40px auto', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-subtle)' }}>
+        <h2 style={{ color: 'var(--text-primary)', marginBottom: 'var(--space-sm)' }}>Sign In to TradeTrust</h2>
+        <p style={{ marginBottom: 'var(--space-lg)', lineHeight: '1.5' }}>
+          Access your personal bazaar profile, dynamic Trust Score, and private credit ledger.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+          <button
+            type="button"
+            className="modal-btn-primary"
+            style={{ width: '100%', padding: '12px 16px', background: 'var(--accent-blue)', color: '#fff', borderRadius: 'var(--radius-md)', fontWeight: 600 }}
+            onClick={handleQuickDemoLogin}
+            disabled={signingIn}
+          >
+            {signingIn ? 'Loading Trader Profile...' : '⚡ Quick Sign-In as Seed Trader (Rajesh Mehta)'}
+          </button>
+          <button
+            type="button"
+            className="modal-btn-secondary"
+            style={{ width: '100%', padding: '10px 16px' }}
+            onClick={() => navigate('/login')}
+          >
+            Go to Full Login / Registration
+          </button>
+        </div>
       </div>
     );
   }
 
-  const initialLetter = user.initial || (user.businessName ? user.businessName[0] : 'U');
+  const initialLetter = user.initial || (user.businessName ? user.businessName[0] : (user.name ? user.name[0] : 'U'));
 
   return (
     <div className="dashboard-page">

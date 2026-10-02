@@ -12,12 +12,7 @@ export function BottomNav({ unreadCount = 0 }) {
   const location = useLocation();
 
   const handleAuthNav = (e, path) => {
-    if (!user) {
-      e.preventDefault();
-      showComingSoon(e);
-    } else {
-      navigate(path);
-    }
+    navigate(path);
   };
 
   return (

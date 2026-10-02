@@ -42,7 +42,7 @@ export function Navbar({ unreadCount = 0 }) {
           <button
             type="button"
             className="navbar-login-btn"
-            onClick={(e) => showComingSoon(e)}
+            onClick={() => navigate('/login')}
           >
             Log in / Sign up
           </button>

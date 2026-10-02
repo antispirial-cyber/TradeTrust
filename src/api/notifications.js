@@ -1,53 +1,65 @@
+import { apiClient } from './client';
 import { INITIAL_NOTIFICATIONS } from './mockData';
 
-const NOTIFICATIONS_KEY = 'tradetrust_notifications';
+export async function getNotifications() {
+  const res = await apiClient('/api/notifications');
+  if (res.success && res.data) {
+    const list = res.data.notifications || (Array.isArray(res.data) ? res.data : []);
+    const unreadCount = res.data.unreadCount !== undefined ? res.data.unreadCount : list.filter(n => !n.isRead).length;
+    return {
+      success: true,
+      data: list.map(n => ({
+        ...n,
+        id: n.id || n.notificationId
+      })),
+      unreadCount
+    };
+  }
 
-function getStoredNotifications() {
-  const stored = localStorage.getItem(NOTIFICATIONS_KEY);
+  // Fallback to local
+  const stored = localStorage.getItem('tradetrust_notifications');
   if (stored) {
     try {
-      return JSON.parse(stored);
-    } catch {
-      // fallback
-    }
+      const parsed = JSON.parse(stored);
+      return {
+        success: true,
+        data: parsed,
+        unreadCount: parsed.filter(n => !n.isRead).length
+      };
+    } catch {}
   }
-  localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(INITIAL_NOTIFICATIONS));
-  return INITIAL_NOTIFICATIONS;
-}
 
-function saveNotifications(notifications) {
-  localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
-}
-
-export async function getNotifications() {
-  const notifications = getStoredNotifications();
-  const unreadCount = notifications.filter(n => !n.isRead).length;
   return {
     success: true,
-    data: notifications,
-    unreadCount
+    data: INITIAL_NOTIFICATIONS,
+    unreadCount: INITIAL_NOTIFICATIONS.filter(n => !n.isRead).length
   };
 }
 
 export async function markAllNotificationsRead() {
-  const notifications = getStoredNotifications();
-  const updated = notifications.map(n => ({ ...n, isRead: true }));
-  saveNotifications(updated);
+  const res = await apiClient('/api/notifications/read-all', { method: 'POST' });
+  if (res.success) {
+    const curr = await getNotifications();
+    return {
+      success: true,
+      data: (curr.data || []).map(n => ({ ...n, isRead: true })),
+      unreadCount: 0
+    };
+  }
+
   return {
     success: true,
-    data: updated,
+    data: [],
     unreadCount: 0
   };
 }
 
 export async function markNotificationRead(id) {
-  const notifications = getStoredNotifications();
-  const updated = notifications.map(n => n.id === id ? { ...n, isRead: true } : n);
-  saveNotifications(updated);
-  const unreadCount = updated.filter(n => !n.isRead).length;
+  const res = await apiClient(`/api/notifications/${id}/read`, { method: 'POST' });
+  const curr = await getNotifications();
   return {
     success: true,
-    data: updated,
-    unreadCount
+    data: curr.data || [],
+    unreadCount: curr.unreadCount || 0
   };
 }

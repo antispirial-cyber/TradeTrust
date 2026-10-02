@@ -17,12 +17,7 @@ export function Sidebar({ unreadCount = 0 }) {
   };
 
   const handleAuthGuardedNav = (e, path) => {
-    if (!user) {
-      e.preventDefault();
-      showComingSoon(e);
-    } else {
-      navigate(path);
-    }
+    navigate(path);
   };
 
   return (
@@ -104,7 +99,7 @@ export function Sidebar({ unreadCount = 0 }) {
           <button
             type="button"
             className="sidebar-login-btn"
-            onClick={(e) => showComingSoon(e)}
+            onClick={() => navigate('/login')}
           >
             Log in / Sign up
           </button>

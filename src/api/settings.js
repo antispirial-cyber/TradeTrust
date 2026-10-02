@@ -1,4 +1,4 @@
-const SETTINGS_KEY = 'tradetrust_settings';
+import { apiClient } from './client';
 
 export const PRESET_ACCENT_COLORS = [
   '#1E6FFB', // Vibrant Blue (Default)
@@ -12,24 +12,29 @@ export const PRESET_ACCENT_COLORS = [
 ];
 
 export async function getUserSettings() {
-  const stored = localStorage.getItem(SETTINGS_KEY);
+  const res = await apiClient('/api/trader/settings');
+  if (res.success && res.data) {
+    return { success: true, data: res.data };
+  }
+
+  const stored = localStorage.getItem('tradetrust_settings');
   if (stored) {
     try {
       return { success: true, data: JSON.parse(stored) };
-    } catch {
-      // fallback
-    }
+    } catch {}
   }
-  const defaultSettings = {
-    accentColor: '#1E6FFB'
-  };
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(defaultSettings));
+  const defaultSettings = { accentColor: '#1E6FFB' };
+  localStorage.setItem('tradetrust_settings', JSON.stringify(defaultSettings));
   return { success: true, data: defaultSettings };
 }
 
 export async function saveUserSettings(settings) {
-  const current = (await getUserSettings()).data;
-  const updated = { ...current, ...settings };
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
+  const res = await apiClient('/api/trader/settings', {
+    method: 'POST',
+    body: settings
+  });
+
+  const updated = res.success && res.data ? res.data : settings;
+  localStorage.setItem('tradetrust_settings', JSON.stringify(updated));
   return { success: true, data: updated };
 }

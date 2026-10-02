@@ -1,40 +1,41 @@
+import { apiClient } from './client';
 import { INITIAL_TRADERS } from './mockData';
 
-const STORAGE_KEY = 'tradetrust_traders';
-
-function getStoredTraders() {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch {
-      // fallback
-    }
-  }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_TRADERS));
-  return INITIAL_TRADERS;
-}
-
-function saveTraders(traders) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(traders));
-}
-
 export async function getTraders({ cluster, sector, role, search } = {}) {
-  const traders = getStoredTraders();
-  let results = [...traders];
+  const params = new URLSearchParams();
+  if (cluster && cluster !== 'All Clusters') params.append('cluster', cluster);
+  if (sector && sector !== 'All Sectors') params.append('sector', sector);
+  if (role && role !== 'All Roles') params.append('role', role);
+  if (search && search.trim()) params.append('search', search.trim());
 
+  const query = params.toString();
+  const url = query ? `/api/traders?${query}` : '/api/traders';
+
+  const res = await apiClient(url);
+  if (res.success && Array.isArray(res.data)) {
+    // Ensure id field is always set
+    const list = res.data.map(t => ({
+      ...t,
+      id: t.id || t.traderId,
+      initial: t.name ? t.name[0] : (t.businessName ? t.businessName[0] : 'T')
+    }));
+    return {
+      success: true,
+      data: list
+    };
+  }
+
+  // Graceful fallback to mock data if backend not reachable
+  let results = [...INITIAL_TRADERS];
   if (cluster && cluster !== 'All Clusters') {
     results = results.filter(t => t.cluster.toLowerCase() === cluster.toLowerCase());
   }
-
   if (sector && sector !== 'All Sectors') {
     results = results.filter(t => t.sector.toLowerCase() === sector.toLowerCase());
   }
-
   if (role && role !== 'All Roles') {
     results = results.filter(t => t.role.toLowerCase() === role.toLowerCase());
   }
-
   if (search && search.trim() !== '') {
     const q = search.trim().toLowerCase();
     results = results.filter(t =>
@@ -43,10 +44,7 @@ export async function getTraders({ cluster, sector, role, search } = {}) {
       t.phone.includes(q)
     );
   }
-
-  // Sort by trust score descending
   results.sort((a, b) => b.trustScore - a.trustScore);
-
   return {
     success: true,
     data: results
@@ -54,38 +52,45 @@ export async function getTraders({ cluster, sector, role, search } = {}) {
 }
 
 export async function getTraderById(id) {
-  const traders = getStoredTraders();
-  const trader = traders.find(t => t.id === Number(id));
-  if (!trader) {
+  const res = await apiClient(`/api/traders/${id}`);
+  if (res.success && res.data) {
+    const trader = {
+      ...res.data,
+      id: res.data.id || res.data.traderId,
+      initial: res.data.name ? res.data.name[0] : (res.data.businessName ? res.data.businessName[0] : 'T')
+    };
     return {
-      success: false,
-      error: 'NOT_FOUND',
-      message: 'Trader not found'
+      success: true,
+      data: trader
     };
   }
+
+  // Fallback to mock
+  const fallback = INITIAL_TRADERS.find(t => t.id === Number(id));
+  if (fallback) {
+    return { success: true, data: fallback };
+  }
+
   return {
-    success: true,
-    data: trader
+    success: false,
+    error: 'NOT_FOUND',
+    message: 'Trader not found'
   };
 }
 
 export async function updateTrader(id, updates) {
-  const traders = getStoredTraders();
-  const index = traders.findIndex(t => t.id === Number(id));
-  if (index === -1) {
+  const res = await apiClient('/api/trader/profile', {
+    method: 'POST',
+    body: updates
+  });
+  if (res.success) {
     return {
-      success: false,
-      error: 'NOT_FOUND',
-      message: 'Trader not found'
+      success: true,
+      data: res.data
     };
   }
-
-  const updatedTrader = { ...traders[index], ...updates };
-  traders[index] = updatedTrader;
-  saveTraders(traders);
-
   return {
-    success: true,
-    data: updatedTrader
+    success: false,
+    message: res.message || 'Failed to update trader'
   };
 }

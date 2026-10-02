@@ -36,8 +36,28 @@ export function ComplaintModal({ reportedTrader, onClose, onSubmitSuccess }) {
     }
   };
 
-  const handleSubmit = (e) => {
-    showComingSoon(e);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const res = await fileComplaint({
+        reportedId: reportedTrader.id || reportedTrader.traderId,
+        description,
+        amountDisputed,
+        incidentDate,
+        proofFileName: selectedFile ? selectedFile.name : null
+      });
+      if (res.success) {
+        setIsSubmitted(true);
+        if (onSubmitSuccess) onSubmitSuccess();
+      } else {
+        alert(res.message || 'Failed to submit complaint');
+      }
+    } catch (err) {
+      alert('Error submitting complaint: ' + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

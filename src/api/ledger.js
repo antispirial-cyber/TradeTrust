@@ -1,85 +1,96 @@
+import { apiClient } from './client';
 import { INITIAL_LEDGER_ENTRIES } from './mockData';
 
-const LEDGER_KEY = 'tradetrust_ledger';
+export async function getLedgerEntries() {
+  const res = await apiClient('/api/ledger');
+  if (res.success && res.data) {
+    const list = Array.isArray(res.data) ? res.data : (res.data.entries || []);
+    return {
+      success: true,
+      data: list.map(e => ({
+        ...e,
+        id: e.id || e.entryId
+      }))
+    };
+  }
 
-function getStoredLedger() {
-  const stored = localStorage.getItem(LEDGER_KEY);
+  // Fallback to local storage if offline
+  const stored = localStorage.getItem('tradetrust_ledger');
   if (stored) {
     try {
-      return JSON.parse(stored);
-    } catch {
-      // fallback
-    }
+      return { success: true, data: JSON.parse(stored) };
+    } catch {}
   }
-  localStorage.setItem(LEDGER_KEY, JSON.stringify(INITIAL_LEDGER_ENTRIES));
-  return INITIAL_LEDGER_ENTRIES;
-}
-
-function saveLedger(entries) {
-  localStorage.setItem(LEDGER_KEY, JSON.stringify(entries));
-}
-
-export async function getLedgerEntries() {
-  const entries = getStoredLedger();
   return {
     success: true,
-    data: [...entries]
+    data: INITIAL_LEDGER_ENTRIES
   };
 }
 
 export async function addLedgerEntry(entry) {
-  const entries = getStoredLedger();
-  const newEntry = {
-    id: `leg-${Date.now()}`,
-    partyName: entry.partyName || 'Unnamed Party',
-    amount: Number(entry.amount) || 0,
-    entryType: entry.entryType || 'CREDIT_GIVEN',
-    entryDate: entry.entryDate || new Date().toISOString().split('T')[0],
-    description: entry.description || '',
-    status: entry.status || 'PENDING'
-  };
+  const res = await apiClient('/api/ledger', {
+    method: 'POST',
+    body: {
+      partyName: entry.partyName || 'Unnamed Party',
+      amount: Number(entry.amount) || 0,
+      entryType: entry.entryType || 'CREDIT_GIVEN',
+      entryDate: entry.entryDate || new Date().toISOString().split('T')[0],
+      description: entry.description || '',
+      status: entry.status || 'PENDING'
+    }
+  });
 
-  entries.unshift(newEntry);
-  saveLedger(entries);
+  if (res.success && res.data) {
+    return {
+      success: true,
+      data: {
+        ...res.data,
+        id: res.data.id || res.data.entryId
+      }
+    };
+  }
 
   return {
-    success: true,
-    data: newEntry
+    success: false,
+    message: res.message || 'Failed to add ledger entry'
   };
 }
 
 export async function updateLedgerEntry(id, updates) {
-  const entries = getStoredLedger();
-  const index = entries.findIndex(e => e.id === id);
-  if (index === -1) {
+  const res = await apiClient(`/api/ledger/${id}/status`, {
+    method: 'POST',
+    body: {
+      status: updates.status || 'PENDING'
+    }
+  });
+
+  if (res.success) {
     return {
-      success: false,
-      error: 'NOT_FOUND',
-      message: 'Ledger entry not found'
+      success: true,
+      data: updates
     };
   }
 
-  const updated = {
-    ...entries[index],
-    ...updates,
-    amount: updates.amount !== undefined ? Number(updates.amount) : entries[index].amount
-  };
-
-  entries[index] = updated;
-  saveLedger(entries);
-
   return {
-    success: true,
-    data: updated
+    success: false,
+    message: res.message || 'Failed to update ledger entry'
   };
 }
 
 export async function deleteLedgerEntry(id) {
-  const entries = getStoredLedger();
-  const filtered = entries.filter(e => e.id !== id);
-  saveLedger(filtered);
+  const res = await apiClient(`/api/ledger/${id}`, {
+    method: 'DELETE'
+  });
+
+  if (res.success) {
+    return {
+      success: true,
+      data: { id }
+    };
+  }
+
   return {
-    success: true,
-    data: { id }
+    success: false,
+    message: res.message || 'Failed to delete ledger entry'
   };
 }

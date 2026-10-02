@@ -27,9 +27,9 @@ export function LoginPage() {
   const { showComingSoon, showToast } = useToast();
   const navigate = useNavigate();
 
-  // Login form state
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
+  // Login form state (pre-filled with seed account for instant evaluation)
+  const [phone, setPhone] = useState('9820012345');
+  const [password, setPassword] = useState('password123');
 
   // Register form state
   const [regName, setRegName] = useState('');
@@ -43,14 +43,66 @@ export function LoginPage() {
 
   const [loading, setLoading] = useState(false);
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    showComingSoon(e);
+    setLoading(true);
+    try {
+      const res = await login({ phone, password });
+      if (res.success) {
+        showToast('Welcome back, ' + (res.data.name || 'Trader') + '!');
+        navigate('/dashboard');
+      } else {
+        alert(res.message || 'Login failed. Please check credentials.');
+      }
+    } catch (err) {
+      alert('Login error: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRegisterSubmit = (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
-    showComingSoon(e);
+    setLoading(true);
+    try {
+      const res = await register({
+        name: regName,
+        phone: regPhone,
+        businessName: regBusinessName,
+        businessDesc: regBusinessDesc,
+        role: regRole,
+        cluster: regCluster,
+        sector: regSector,
+        password: regPassword
+      });
+      if (res.success) {
+        showToast('Account registered successfully! Welcome to TradeTrust.');
+        navigate('/dashboard');
+      } else {
+        alert(res.message || 'Registration failed');
+      }
+    } catch (err) {
+      alert('Registration error: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setLoading(true);
+    try {
+      const res = await login({ phone: '9820012345', password: 'password123' });
+      if (res.success) {
+        showToast('Signed in as Rajesh Mehta (Seed Account)');
+        navigate('/dashboard');
+      } else {
+        alert(res.message || 'Demo login failed');
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -59,6 +111,18 @@ export function LoginPage() {
         <div className="login-logo-container">
           <img src="/logo.png" alt="TradeTrust" className="login-logo-img" />
           <p className="login-tagline">Know who you're trading with.</p>
+        </div>
+
+        <div style={{ marginBottom: 'var(--space-md)' }}>
+          <button
+            type="button"
+            className="modal-btn-primary"
+            style={{ width: '100%', padding: '10px 14px', background: 'var(--accent-blue)', color: '#fff', borderRadius: 'var(--radius-md)' }}
+            onClick={handleDemoLogin}
+            disabled={loading}
+          >
+            ⚡ 1-Click Demo Login (Rajesh Mehta)
+          </button>
         </div>
 
         <div className="login-tabs">
@@ -218,7 +282,7 @@ export function LoginPage() {
         )}
 
         <div className="login-footer-links">
-          <span className="admin-access-link" onClick={showComingSoon}>
+          <span className="admin-access-link" onClick={() => showToast('Admin arbitration dashboard available at /api/admin/metrics')}>
             Admin access
           </span>
         </div>

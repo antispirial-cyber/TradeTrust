@@ -1,3 +1,4 @@
+import { apiClient } from './client';
 import { getTraderById, updateTrader } from './traders';
 
 export async function toggleConnectTrader(traderId) {
@@ -5,18 +6,39 @@ export async function toggleConnectTrader(traderId) {
   if (!result.success) return result;
 
   const currentStatus = result.data.connectionStatus;
-  let nextStatus = 'connected';
-  if (currentStatus === 'not_connected') {
-    nextStatus = 'connected'; // In demo, immediate connect or pending -> connected
-  } else if (currentStatus === 'connected') {
-    nextStatus = 'not_connected';
+  const isCurrentlyConnected = currentStatus === 'connected';
+
+  if (isCurrentlyConnected) {
+    const res = await apiClient('/api/connect/remove', {
+      method: 'POST',
+      body: { targetTraderId: Number(traderId) }
+    });
+    if (res.success) {
+      return {
+        success: true,
+        data: {
+          ...result.data,
+          connectionStatus: 'not_connected'
+        }
+      };
+    }
   } else {
-    nextStatus = 'connected';
+    const res = await apiClient('/api/connect/request', {
+      method: 'POST',
+      body: { targetTraderId: Number(traderId) }
+    });
+    if (res.success) {
+      return {
+        success: true,
+        data: {
+          ...result.data,
+          connectionStatus: 'connected'
+        }
+      };
+    }
   }
 
-  const updated = await updateTrader(traderId, {
-    connectionStatus: nextStatus
-  });
-
-  return updated;
+  // Local fallback
+  const nextStatus = isCurrentlyConnected ? 'not_connected' : 'connected';
+  return updateTrader(traderId, { connectionStatus: nextStatus });
 }
