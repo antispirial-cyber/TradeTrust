@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FilterBar } from '../components/browse/FilterBar';
 import { TraderCard } from '../components/browse/TraderCard';
+import { CourseworkPortfolio } from '../components/common/CourseworkPortfolio';
 import { getTraders } from '../api/traders';
 import { toggleConnectTrader } from '../api/connections';
 import { useToast } from '../context/ToastContext';
@@ -126,6 +127,9 @@ export function BrowsePage() {
           />
         ))}
       </div>
+
+      {/* Dedicated Coursework & Evaluation Portfolio at the very bottom of Browse Registry */}
+      <CourseworkPortfolio />
     </div>
   );
 }
