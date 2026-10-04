@@ -45,6 +45,14 @@ export async function login({ phone, password }) {
         message: res.message || 'Login successful'
       };
     }
+
+    // If backend is active and responded with 401 Unauthorized or 400 Bad Request
+    if (res && (res.status === 401 || res.status === 400)) {
+      return {
+        success: false,
+        message: res.message || 'Invalid phone number or password'
+      };
+    }
   } catch (err) {
     console.warn('[TradeTrust] Backend login attempt error:', err);
   }
@@ -53,7 +61,13 @@ export async function login({ phone, password }) {
   let authenticatedUser = null;
 
   // Check seed trader: Rajesh Mehta (9820012345 / password123)
-  if (phone === '9820012345' && (password === 'password123' || !password || password === '')) {
+  if (phone === '9820012345') {
+    if (password && password !== 'password123') {
+      return {
+        success: false,
+        message: 'Incorrect password for seed trader account.'
+      };
+    }
     authenticatedUser = {
       id: 1,
       traderId: 1,
@@ -71,14 +85,30 @@ export async function login({ phone, password }) {
     };
   } else {
     // Check stored custom registered traders
+    let storedTraders = [];
     try {
-      const storedTraders = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
+      storedTraders = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
       authenticatedUser = storedTraders.find(t => t.phone === phone);
     } catch {}
 
-    if (!authenticatedUser) {
+    if (authenticatedUser) {
+      if (authenticatedUser.password && password && authenticatedUser.password !== password) {
+        return {
+          success: false,
+          message: 'Incorrect password. Please verify and try again.'
+        };
+      }
+    } else {
       // Check initial mock traders
       authenticatedUser = INITIAL_TRADERS.find(t => t.phone === phone);
+      if (authenticatedUser) {
+        if (password && password !== 'password123') {
+          return {
+            success: false,
+            message: 'Incorrect password. Demo accounts use password: password123'
+          };
+        }
+      }
     }
   }
 
@@ -95,7 +125,7 @@ export async function login({ phone, password }) {
 
   return {
     success: false,
-    message: 'Invalid phone number or password. (Test account: 9820012345 / password123)'
+    message: 'Trader account not found. Please register your business or use Demo Login.'
   };
 }
 
@@ -120,6 +150,14 @@ export async function register(data) {
         message: res.message || 'Registration successful'
       };
     }
+
+    // If backend is active and returned 409 Conflict (phone already exists) or 400 Bad Request
+    if (res && (res.status === 409 || res.status === 400)) {
+      return {
+        success: false,
+        message: res.message || 'Registration failed: Phone number already exists.'
+      };
+    }
   } catch (err) {
     console.warn('[TradeTrust] Backend register attempt error:', err);
   }
@@ -130,6 +168,7 @@ export async function register(data) {
     traderId: Date.now(),
     name: data.name,
     phone: data.phone,
+    password: data.password, // Persist password so login checks work seamlessly on Vercel
     businessName: data.businessName,
     businessDesc: data.businessDesc,
     role: data.role || 'RETAILER',
@@ -143,8 +182,13 @@ export async function register(data) {
   };
 
   try {
-    const storedTraders = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
-    storedTraders.unshift(newTrader);
+    let storedTraders = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
+    const existingIdx = storedTraders.findIndex(t => t.phone === data.phone);
+    if (existingIdx >= 0) {
+      storedTraders[existingIdx] = newTrader;
+    } else {
+      storedTraders.unshift(newTrader);
+    }
     localStorage.setItem('tradetrust_traders', JSON.stringify(storedTraders));
   } catch {}
 
