@@ -24,12 +24,21 @@ export function setCurrentUser(user) {
   }
 }
 
+export function normalizePhone(p) {
+  if (!p) return '';
+  const digits = String(p).replace(/\D/g, '');
+  return digits.length >= 10 ? digits.slice(-10) : digits;
+}
+
 export async function login({ phone, password }) {
+  const cleanPhone = normalizePhone(phone);
+  const cleanPass = (password || '').trim();
+
   // 1. Attempt real Java backend login
   try {
     const res = await apiClient('/api/auth/login', {
       method: 'POST',
-      body: { phone, password }
+      body: { phone: cleanPhone, password: cleanPass }
     });
 
     if (res.success && res.data) {
@@ -61,8 +70,8 @@ export async function login({ phone, password }) {
   let authenticatedUser = null;
 
   // Check seed trader: Rajesh Mehta (9820012345 / password123)
-  if (phone === '9820012345') {
-    if (password && password !== 'password123') {
+  if (cleanPhone === '9820012345') {
+    if (cleanPass && cleanPass !== 'password123') {
       return {
         success: false,
         message: 'Incorrect password for seed trader account.'
@@ -88,11 +97,11 @@ export async function login({ phone, password }) {
     let storedTraders = [];
     try {
       storedTraders = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
-      authenticatedUser = storedTraders.find(t => t.phone === phone);
+      authenticatedUser = storedTraders.find(t => normalizePhone(t.phone) === cleanPhone);
     } catch {}
 
     if (authenticatedUser) {
-      if (authenticatedUser.password && password && authenticatedUser.password !== password) {
+      if (authenticatedUser.password && cleanPass && authenticatedUser.password !== cleanPass) {
         return {
           success: false,
           message: 'Incorrect password. Please verify and try again.'
@@ -100,9 +109,9 @@ export async function login({ phone, password }) {
       }
     } else {
       // Check initial mock traders
-      authenticatedUser = INITIAL_TRADERS.find(t => t.phone === phone);
+      authenticatedUser = INITIAL_TRADERS.find(t => normalizePhone(t.phone) === cleanPhone);
       if (authenticatedUser) {
-        if (password && password !== 'password123') {
+        if (cleanPass && cleanPass !== 'password123') {
           return {
             success: false,
             message: 'Incorrect password. Demo accounts use password: password123'
@@ -130,11 +139,18 @@ export async function login({ phone, password }) {
 }
 
 export async function register(data) {
+  const cleanPhoneNum = normalizePhone(data.phone) || String(data.phone || '').trim();
+  const cleanPass = (data.password || '').trim();
+
   // 1. Attempt real Java backend registration
   try {
     const res = await apiClient('/api/auth/register', {
       method: 'POST',
-      body: data
+      body: {
+        ...data,
+        phone: cleanPhoneNum,
+        password: cleanPass
+      }
     });
 
     if (res.success && res.data) {
@@ -166,24 +182,24 @@ export async function register(data) {
   const newTrader = {
     id: Date.now(),
     traderId: Date.now(),
-    name: data.name,
-    phone: data.phone,
-    password: data.password, // Persist password so login checks work seamlessly on Vercel
-    businessName: data.businessName,
-    businessDesc: data.businessDesc,
+    name: (data.name || '').trim(),
+    phone: cleanPhoneNum,
+    password: cleanPass, // Persist password so login checks work seamlessly on Vercel
+    businessName: (data.businessName || '').trim(),
+    businessDesc: (data.businessDesc || '').trim(),
     role: data.role || 'RETAILER',
     cluster: data.cluster || 'Zaveri Bazaar',
     sector: data.sector || 'General',
     trustScore: 10.00,
     isVerifiedBadge: false,
     scoreFrozen: false,
-    initial: data.name ? data.name[0] : 'T',
+    initial: data.name && data.name.trim() ? data.name.trim()[0].toUpperCase() : 'T',
     createdAt: new Date().toISOString()
   };
 
   try {
     let storedTraders = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
-    const existingIdx = storedTraders.findIndex(t => t.phone === data.phone);
+    const existingIdx = storedTraders.findIndex(t => normalizePhone(t.phone) === cleanPhoneNum);
     if (existingIdx >= 0) {
       storedTraders[existingIdx] = newTrader;
     } else {

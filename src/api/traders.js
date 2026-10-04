@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import { INITIAL_TRADERS } from './mockData';
+import { normalizePhone } from './auth';
 
 export async function getTraders({ cluster, sector, role, search } = {}) {
   const params = new URLSearchParams();
@@ -30,8 +31,8 @@ export async function getTraders({ cluster, sector, role, search } = {}) {
   try {
     stored = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
   } catch {}
-  const phoneSet = new Set(stored.map(t => t.phone));
-  const combined = [...stored, ...INITIAL_TRADERS.filter(t => !phoneSet.has(t.phone))];
+  const phoneSet = new Set(stored.map(t => normalizePhone(t.phone)));
+  const combined = [...stored, ...INITIAL_TRADERS.filter(t => !phoneSet.has(normalizePhone(t.phone)))];
 
   let results = [...combined];
   if (cluster && cluster !== 'All Clusters') {
