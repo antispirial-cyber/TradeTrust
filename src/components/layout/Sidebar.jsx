@@ -1,23 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { SearchIcon, UserIcon, LedgerIcon, BellIcon, SettingsIcon, LogOutIcon } from '../common/Icons';
 import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../context/ToastContext';
+import { TermsModal } from '../modals/TermsModal';
+import { ContactModal } from '../modals/ContactModal';
 import './Sidebar.css';
 
 export function Sidebar({ unreadCount = 0 }) {
   const { user, logout } = useAuth();
-  const { showComingSoon } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
+  const [isContactOpen, setIsContactOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
     navigate('/browse');
   };
 
-  const handleAuthGuardedNav = (e, path) => {
-    navigate(path);
+  const handleGuardedNavigation = (path, promptKey) => {
+    if (!user) {
+      navigate(`${path}${path.includes('?') ? '&' : '?'}prompt=${promptKey}`);
+    } else {
+      navigate(path);
+    }
   };
 
   return (
@@ -40,7 +47,7 @@ export function Sidebar({ unreadCount = 0 }) {
 
           <div
             className={`sidebar-link ${location.pathname === '/dashboard' && !location.search.includes('tab=ledger') ? 'active' : ''}`}
-            onClick={(e) => handleAuthGuardedNav(e, '/dashboard')}
+            onClick={() => handleGuardedNavigation('/dashboard', 'profile')}
           >
             <UserIcon size={20} />
             <span>My Profile</span>
@@ -48,20 +55,20 @@ export function Sidebar({ unreadCount = 0 }) {
 
           <div
             className={`sidebar-link ${location.pathname === '/dashboard' && location.search.includes('tab=ledger') ? 'active' : ''}`}
-            onClick={(e) => handleAuthGuardedNav(e, '/dashboard?tab=ledger')}
+            onClick={() => handleGuardedNavigation('/dashboard?tab=ledger', 'ledger')}
           >
             <LedgerIcon size={20} />
             <span>Private Ledger</span>
           </div>
 
-          <NavLink
-            to="/notifications"
-            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+          <div
+            className={`sidebar-link ${location.pathname === '/notifications' ? 'active' : ''}`}
+            onClick={() => handleGuardedNavigation('/notifications', 'notifications')}
           >
             <BellIcon size={20} />
             <span>Notifications</span>
-            {unreadCount > 0 && <span className="sidebar-badge">{unreadCount}</span>}
-          </NavLink>
+            {user && unreadCount > 0 && <span className="sidebar-badge">{unreadCount}</span>}
+          </div>
 
           <NavLink
             to="/settings"
@@ -78,7 +85,7 @@ export function Sidebar({ unreadCount = 0 }) {
           <>
             <div className="sidebar-user" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
               <div className="sidebar-avatar">
-                {user.initial || (user.businessName ? user.businessName[0] : 'U')}
+                {user.initial || (user.businessName ? user.businessName[0] : (user.name ? user.name[0] : 'U'))}
               </div>
               <div className="sidebar-user-info">
                 <span className="sidebar-user-name">{user.businessName || user.name}</span>
@@ -96,15 +103,41 @@ export function Sidebar({ unreadCount = 0 }) {
             </button>
           </>
         ) : (
-          <button
-            type="button"
-            className="sidebar-login-btn"
-            onClick={() => navigate('/login')}
-          >
-            Log in / Sign up
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+              <button
+                type="button"
+                className="sidebar-login-btn"
+                style={{ padding: '8px 4px', fontSize: 'var(--text-xs)' }}
+                onClick={() => navigate('/login')}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                className="sidebar-login-btn"
+                style={{ padding: '8px 4px', fontSize: 'var(--text-xs)', background: 'var(--accent-blue)', color: '#fff', border: 'none' }}
+                onClick={() => navigate('/register')}
+              >
+                Register
+              </button>
+            </div>
+          </div>
         )}
+
+        <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'center', gap: '10px', fontSize: '11px', color: 'var(--text-muted)' }}>
+          <span style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setIsTermsOpen(true)}>
+            Terms
+          </span>
+          <span>•</span>
+          <span style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setIsContactOpen(true)}>
+            Contact
+          </span>
+        </div>
       </div>
+
+      {isTermsOpen && <TermsModal onClose={() => setIsTermsOpen(false)} />}
+      {isContactOpen && <ContactModal onClose={() => setIsContactOpen(false)} />}
     </aside>
   );
 }

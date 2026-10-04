@@ -2,17 +2,19 @@ import React from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { SearchIcon, UserIcon, LedgerIcon, BellIcon, SettingsIcon } from '../common/Icons';
 import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../context/ToastContext';
 import './BottomNav.css';
 
 export function BottomNav({ unreadCount = 0 }) {
   const { user } = useAuth();
-  const { showComingSoon } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleAuthNav = (e, path) => {
-    navigate(path);
+  const handleGuardedNav = (path, promptKey) => {
+    if (!user) {
+      navigate(`${path}${path.includes('?') ? '&' : '?'}prompt=${promptKey}`);
+    } else {
+      navigate(path);
+    }
   };
 
   return (
@@ -27,7 +29,7 @@ export function BottomNav({ unreadCount = 0 }) {
 
       <div
         className={`bottom-nav-item ${location.pathname === '/dashboard' && !location.search.includes('tab=ledger') ? 'active' : ''}`}
-        onClick={(e) => handleAuthNav(e, '/dashboard')}
+        onClick={() => handleGuardedNav('/dashboard', 'profile')}
       >
         <UserIcon size={20} />
         <span>Profile</span>
@@ -35,20 +37,20 @@ export function BottomNav({ unreadCount = 0 }) {
 
       <div
         className={`bottom-nav-item ${location.pathname === '/dashboard' && location.search.includes('tab=ledger') ? 'active' : ''}`}
-        onClick={(e) => handleAuthNav(e, '/dashboard?tab=ledger')}
+        onClick={() => handleGuardedNav('/dashboard?tab=ledger', 'ledger')}
       >
         <LedgerIcon size={20} />
         <span>Ledger</span>
       </div>
 
-      <NavLink
-        to="/notifications"
-        className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}
+      <div
+        className={`bottom-nav-item ${location.pathname === '/notifications' ? 'active' : ''}`}
+        onClick={() => handleGuardedNav('/notifications', 'notifications')}
       >
         <BellIcon size={20} />
         <span>Alerts</span>
-        {unreadCount > 0 && <span className="bottom-nav-badge" />}
-      </NavLink>
+        {user && unreadCount > 0 && <span className="bottom-nav-badge" />}
+      </div>
 
       <NavLink
         to="/settings"

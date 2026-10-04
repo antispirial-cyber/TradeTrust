@@ -19,8 +19,9 @@ export function App() {
         <ThemeProvider>
           <ToastProvider>
             <Routes>
-              {/* Standalone Login Page without chrome layout */}
-              <Route path="/login" element={<LoginPage />} />
+              {/* Standalone Login and Register Pages without chrome layout */}
+              <Route path="/login" element={<LoginPage initialTab="login" />} />
+              <Route path="/register" element={<LoginPage initialTab="register" />} />
 
               {/* Main App Layout */}
               <Route element={<AppLayout />}>

@@ -4,6 +4,7 @@ import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 import { BottomNav } from './BottomNav';
 import { FloatingHelp } from '../common/FloatingHelp';
+import { CourseworkPortfolio } from '../common/CourseworkPortfolio';
 import { getNotifications } from '../../api/notifications';
 import './AppLayout.css';
 
@@ -34,6 +35,8 @@ export function AppLayout() {
         <Navbar unreadCount={unreadCount} />
         <main className="app-content">
           <Outlet context={{ refreshUnreadCount }} />
+          {/* Dedicated Coursework & Evaluation Portfolio for professor grading */}
+          <CourseworkPortfolio />
         </main>
       </div>
       <BottomNav unreadCount={unreadCount} />

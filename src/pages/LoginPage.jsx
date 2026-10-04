@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { TermsModal } from '../components/modals/TermsModal';
+import { ContactModal } from '../components/modals/ContactModal';
 import './LoginPage.css';
 
 const CLUSTERS = [
@@ -21,11 +23,19 @@ const SECTORS = [
   'Stationery'
 ];
 
-export function LoginPage() {
-  const [activeTab, setActiveTab] = useState('login'); // 'login' | 'register'
+export function LoginPage({ initialTab }) {
+  const [searchParams] = useSearchParams();
+  const tabFromQuery = searchParams.get('tab');
+  const promptFromQuery = searchParams.get('prompt');
+
+  const [activeTab, setActiveTab] = useState(initialTab || (tabFromQuery === 'register' ? 'register' : 'login'));
   const { login, register } = useAuth();
-  const { showComingSoon, showToast } = useToast();
+  const { showToast } = useToast();
   const navigate = useNavigate();
+
+  // Modals
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
+  const [isContactOpen, setIsContactOpen] = useState(false);
 
   // Login form state (pre-filled with seed account for instant evaluation)
   const [phone, setPhone] = useState('9820012345');
@@ -42,6 +52,14 @@ export function LoginPage() {
   const [regPassword, setRegPassword] = useState('');
 
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    } else if (tabFromQuery === 'register') {
+      setActiveTab('register');
+    }
+  }, [initialTab, tabFromQuery]);
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -105,6 +123,13 @@ export function LoginPage() {
     }
   };
 
+  const getPromptMessage = () => {
+    if (promptFromQuery === 'ledger') return '🔒 Please sign in to access your Private Credit Ledger.';
+    if (promptFromQuery === 'notifications') return '🔔 Please sign in to view your Market Alerts & Notifications.';
+    if (promptFromQuery === 'profile') return '👤 Please sign in to access your Personal Trader Profile.';
+    return null;
+  };
+
   return (
     <div className="login-page-container">
       <div className="login-card">
@@ -112,6 +137,22 @@ export function LoginPage() {
           <img src="/logo.png" alt="TradeTrust" className="login-logo-img" />
           <p className="login-tagline">Know who you're trading with.</p>
         </div>
+
+        {getPromptMessage() && (
+          <div style={{
+            background: 'rgba(30, 111, 251, 0.1)',
+            border: '1px solid rgba(30, 111, 251, 0.3)',
+            borderRadius: 'var(--radius-md)',
+            padding: '8px 12px',
+            fontSize: 'var(--text-xs)',
+            color: 'var(--accent-blue)',
+            fontWeight: 600,
+            marginBottom: 'var(--space-md)',
+            textAlign: 'center'
+          }}>
+            {getPromptMessage()}
+          </div>
+        )}
 
         <div style={{ marginBottom: 'var(--space-md)' }}>
           <button
@@ -131,14 +172,14 @@ export function LoginPage() {
             className={`login-tab-btn ${activeTab === 'login' ? 'active' : ''}`}
             onClick={() => setActiveTab('login')}
           >
-            Login
+            Sign In
           </button>
           <button
             type="button"
             className={`login-tab-btn ${activeTab === 'register' ? 'active' : ''}`}
             onClick={() => setActiveTab('register')}
           >
-            Register
+            Register Business
           </button>
         </div>
 
@@ -281,12 +322,28 @@ export function LoginPage() {
           </form>
         )}
 
-        <div className="login-footer-links">
-          <span className="admin-access-link" onClick={() => showToast('Admin arbitration dashboard available at /api/admin/metrics')}>
-            Admin access
+        <div className="login-footer-links" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '12px', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+            <span style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setIsTermsOpen(true)}>
+              Terms & Conditions
+            </span>
+            <span>•</span>
+            <span style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setIsContactOpen(true)}>
+              Contact Support
+            </span>
+          </div>
+          <span
+            className="admin-access-link"
+            style={{ fontSize: '11px', color: 'var(--text-muted)' }}
+            onClick={() => showToast('Market Association Arbitration Panel: disputes escalated by merchants are reviewed by authorized officials.')}
+          >
+            🏛️ Market Association Arbitration Desk (Admin)
           </span>
         </div>
       </div>
+
+      {isTermsOpen && <TermsModal onClose={() => setIsTermsOpen(false)} />}
+      {isContactOpen && <ContactModal onClose={() => setIsContactOpen(false)} />}
     </div>
   );
 }

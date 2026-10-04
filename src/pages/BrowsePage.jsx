@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { FilterBar } from '../components/browse/FilterBar';
 import { TraderCard } from '../components/browse/TraderCard';
-import { BlankDropbox } from '../components/common/BlankDropbox';
 import { getTraders } from '../api/traders';
 import { toggleConnectTrader } from '../api/connections';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import './BrowsePage.css';
 
 export function BrowsePage() {
@@ -15,6 +16,7 @@ export function BrowsePage() {
   const [role, setRole] = useState('All Roles');
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
+  const { user } = useAuth();
 
   const fetchTradersList = async () => {
     setLoading(true);
@@ -56,12 +58,42 @@ export function BrowsePage() {
 
   return (
     <div className="browse-page">
-      {/* Blank file upload dropbox on homepage per specification */}
-      <div className="browse-dropbox-wrapper">
-        <BlankDropbox onFileSelect={(file) => showToast(`Document uploaded: ${file.name}`)} />
-      </div>
+      {/* Registration callout banner for unauthenticated bazaar merchants */}
+      {!user && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: 'linear-gradient(90deg, rgba(30, 111, 251, 0.1) 0%, rgba(30, 111, 251, 0.03) 100%)',
+          border: '1px solid rgba(30, 111, 251, 0.25)',
+          borderRadius: 'var(--radius-md)',
+          padding: '10px 16px',
+          marginBottom: 'var(--space-md)',
+          fontSize: 'var(--text-xs)',
+          color: 'var(--text-secondary)'
+        }}>
+          <div>
+            🏛️ <strong style={{ color: 'var(--text-primary)' }}>Are you a Mumbai Bazaar Trader?</strong> Public browsing is free. Register your business to start building your verified Trust Score.
+          </div>
+          <Link
+            to="/register"
+            style={{
+              background: 'var(--accent-blue)',
+              color: '#fff',
+              padding: '6px 14px',
+              borderRadius: 'var(--radius-sm)',
+              fontWeight: 600,
+              textDecoration: 'none',
+              marginLeft: 'var(--space-md)',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            Register Free
+          </Link>
+        </div>
+      )}
 
-      {/* Filter and Search Bar matching screenshot */}
+      {/* Filter and Search Bar at the very top of registry */}
       <FilterBar
         search={search}
         onSearchChange={setSearch}

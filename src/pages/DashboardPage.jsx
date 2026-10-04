@@ -20,9 +20,10 @@ export function DashboardPage() {
   const [isPastRecordsUnlocked, setIsPastRecordsUnlocked] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
 
+  const tabParam = searchParams.get('tab');
+
   // Sync tab with URL query parameter ?tab=ledger
   useEffect(() => {
-    const tabParam = searchParams.get('tab');
     if (tabParam === 'ledger') {
       setActiveTab('ledger');
     } else if (tabParam === 'past-records') {
@@ -31,7 +32,7 @@ export function DashboardPage() {
     } else {
       setActiveTab('profile');
     }
-  }, [searchParams]);
+  }, [searchParams, tabParam]);
 
   const handleScoreRingClick = () => {
     if (!isPastRecordsUnlocked) {
@@ -69,12 +70,21 @@ export function DashboardPage() {
   };
 
   if (!user) {
+    const isLedgerRequest = tabParam === 'ledger';
     return (
-      <div style={{ textAlign: 'center', padding: 'var(--space-2xl) var(--space-xl)', color: 'var(--text-secondary)', maxWidth: '520px', margin: '40px auto', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-subtle)' }}>
-        <h2 style={{ color: 'var(--text-primary)', marginBottom: 'var(--space-sm)' }}>Sign In to TradeTrust</h2>
-        <p style={{ marginBottom: 'var(--space-lg)', lineHeight: '1.5' }}>
-          Access your personal bazaar profile, dynamic Trust Score, and private credit ledger.
+      <div style={{ textAlign: 'center', padding: 'var(--space-2xl) var(--space-xl)', color: 'var(--text-secondary)', maxWidth: '520px', margin: '40px auto', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-md)' }}>
+        <div style={{ fontSize: '32px', marginBottom: '12px' }}>
+          {isLedgerRequest ? '📒' : '👤'}
+        </div>
+        <h2 style={{ color: 'var(--text-primary)', marginBottom: 'var(--space-sm)' }}>
+          {isLedgerRequest ? 'Sign In to Access Private Credit Ledger' : 'Sign In to Access Personal Profile'}
+        </h2>
+        <p style={{ marginBottom: 'var(--space-lg)', lineHeight: '1.5', fontSize: 'var(--text-sm)' }}>
+          {isLedgerRequest
+            ? 'Your private credit given and received ledger is strictly confidential to your authenticated trading account.'
+            : 'Access your verified merchant credentials, dynamic Mumbai Bazaar trust score, and association dispute history.'}
         </p>
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
           <button
             type="button"
@@ -85,14 +95,25 @@ export function DashboardPage() {
           >
             {signingIn ? 'Loading Trader Profile...' : '⚡ Quick Sign-In as Seed Trader (Rajesh Mehta)'}
           </button>
-          <button
-            type="button"
-            className="modal-btn-secondary"
-            style={{ width: '100%', padding: '10px 16px' }}
-            onClick={() => navigate('/login')}
-          >
-            Go to Full Login / Registration
-          </button>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-sm)' }}>
+            <button
+              type="button"
+              className="modal-btn-secondary"
+              style={{ width: '100%', padding: '10px 14px' }}
+              onClick={() => navigate('/login')}
+            >
+              Sign In to Account
+            </button>
+            <button
+              type="button"
+              className="modal-btn-secondary"
+              style={{ width: '100%', padding: '10px 14px', borderColor: 'var(--accent-blue)', color: 'var(--accent-blue)' }}
+              onClick={() => navigate('/register')}
+            >
+              Register Free
+            </button>
+          </div>
         </div>
       </div>
     );

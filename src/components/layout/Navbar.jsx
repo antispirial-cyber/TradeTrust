@@ -2,13 +2,18 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BellIcon } from '../common/Icons';
 import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../context/ToastContext';
 import './Navbar.css';
 
 export function Navbar({ unreadCount = 0 }) {
   const { user } = useAuth();
-  const { showComingSoon } = useToast();
   const navigate = useNavigate();
+
+  const handleNotificationClick = (e) => {
+    if (!user) {
+      e.preventDefault();
+      navigate('/login?prompt=notifications');
+    }
+  };
 
   return (
     <header className="top-navbar">
@@ -35,17 +40,36 @@ export function Navbar({ unreadCount = 0 }) {
               onClick={() => navigate('/dashboard')}
               title={`${user.businessName || user.name} (${user.role})`}
             >
-              {user.initial || (user.businessName ? user.businessName[0] : 'U')}
+              {user.initial || (user.businessName ? user.businessName[0] : (user.name ? user.name[0] : 'U'))}
             </div>
           </>
         ) : (
-          <button
-            type="button"
-            className="navbar-login-btn"
-            onClick={() => navigate('/login')}
-          >
-            Log in / Sign up
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Link
+              to="/notifications"
+              className="navbar-icon-btn"
+              title="Notifications (Sign in required)"
+              onClick={handleNotificationClick}
+            >
+              <BellIcon size={20} />
+            </Link>
+            <button
+              type="button"
+              className="navbar-login-btn"
+              style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
+              onClick={() => navigate('/login')}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              className="navbar-login-btn"
+              style={{ background: 'var(--accent-blue)', color: '#fff', border: 'none' }}
+              onClick={() => navigate('/register')}
+            >
+              Register
+            </button>
+          </div>
         )}
       </div>
     </header>
