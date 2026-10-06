@@ -1,16 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { EditIcon } from '../common/Icons';
 import { useAuth } from '../../context/AuthContext';
+import { processImageUpload } from '../../utils/imageUpload';
 import './ProfileTab.css';
 
 export function ProfileTab({ trader, onUpdateSuccess }) {
   const { updateProfile } = useAuth();
+  const fileInputRef = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
   const [businessName, setBusinessName] = useState(trader.businessName || '');
   const [businessDesc, setBusinessDesc] = useState(trader.businessDesc || '');
   const [phone, setPhone] = useState(trader.phone || '');
   const [cluster, setCluster] = useState(trader.cluster || 'Zaveri Bazaar');
   const [sector, setSector] = useState(trader.sector || 'Ornaments & Jewellery');
+  const [photoUrl, setPhotoUrl] = useState(trader.photoUrl || '');
+  const [uploading, setUploading] = useState(false);
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const dataUrl = await processImageUpload(file);
+      setPhotoUrl(dataUrl);
+      await updateProfile({ photoUrl: dataUrl });
+      if (onUpdateSuccess) onUpdateSuccess();
+    } catch (err) {
+      alert(err.message || 'Failed to upload photo');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    setPhotoUrl('');
+    await updateProfile({ photoUrl: '' });
+    if (onUpdateSuccess) onUpdateSuccess();
+  };
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -19,7 +45,8 @@ export function ProfileTab({ trader, onUpdateSuccess }) {
       businessDesc,
       phone,
       cluster,
-      sector
+      sector,
+      photoUrl
     });
     setIsEditing(false);
     if (onUpdateSuccess) onUpdateSuccess();
@@ -43,6 +70,54 @@ export function ProfileTab({ trader, onUpdateSuccess }) {
 
         {isEditing ? (
           <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', padding: 'var(--space-sm) var(--space-md)', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: 'var(--card-radius)' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card)', border: '2px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                {photoUrl ? (
+                  <img src={photoUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    {trader.initial || (businessName ? businessName[0].toUpperCase() : 'U')}
+                  </span>
+                )}
+              </div>
+              <div style={{ flex: 1 }}>
+                <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '2px' }}>
+                  Merchant Profile Photo
+                </span>
+                <span style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>
+                  Upload shop logo or portrait (replaces name initial)
+                </span>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={handlePhotoUpload}
+                />
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    type="button"
+                    className="modal-btn-primary"
+                    style={{ padding: '4px 10px', fontSize: '11px' }}
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    {uploading ? 'Processing...' : '📷 Change Photo'}
+                  </button>
+                  {photoUrl && (
+                    <button
+                      type="button"
+                      className="modal-btn-secondary"
+                      style={{ padding: '4px 10px', fontSize: '11px' }}
+                      onClick={handleRemovePhoto}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="form-group">
               <label className="form-label">Business / Shop Name</label>
               <input

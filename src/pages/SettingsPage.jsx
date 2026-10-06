@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { PRESET_ACCENT_COLORS } from '../api/settings';
+import { processImageUpload } from '../utils/imageUpload';
 import './SettingsPage.css';
 
 export function SettingsPage() {
@@ -15,6 +16,7 @@ export function SettingsPage() {
     persistAppearance
   } = useTheme();
   const { showToast } = useToast();
+  const fileInputRef = useRef(null);
 
   // Account details form
   const [name, setName] = useState('');
@@ -24,6 +26,8 @@ export function SettingsPage() {
   const [cluster, setCluster] = useState('Zaveri Bazaar');
   const [sector, setSector] = useState('Ornaments & Jewellery');
   const [password, setPassword] = useState('••••••••');
+  const [photoUrl, setPhotoUrl] = useState(user?.photoUrl || '');
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   // Appearance state
   const [selectedTheme, setSelectedTheme] = useState(themeMode || 'dark');
@@ -38,6 +42,7 @@ export function SettingsPage() {
       setBusinessDesc(user.businessDesc || '');
       setCluster(user.cluster || 'Zaveri Bazaar');
       setSector(user.sector || 'Ornaments & Jewellery');
+      setPhotoUrl(user.photoUrl || '');
     }
   }, [user]);
 
@@ -52,9 +57,40 @@ export function SettingsPage() {
     }
   }, [themeMode]);
 
-  const handleAccountSubmit = (e) => {
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    try {
+      const dataUrl = await processImageUpload(file);
+      setPhotoUrl(dataUrl);
+      await updateProfile({ photoUrl: dataUrl });
+      showToast('Custom profile photo uploaded successfully!');
+    } catch (err) {
+      alert(err.message || 'Failed to process photo');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    setPhotoUrl('');
+    await updateProfile({ photoUrl: '' });
+    showToast('Profile photo removed. Defaulting to name initial.');
+  };
+
+  const handleAccountSubmit = async (e) => {
     e.preventDefault();
-    showComingSoon(e);
+    await updateProfile({
+      name,
+      phone,
+      businessName,
+      businessDesc,
+      cluster,
+      sector,
+      photoUrl
+    });
+    showToast('Account details updated successfully!');
   };
 
   const handleThemeSelect = (mode) => {
@@ -89,6 +125,53 @@ export function SettingsPage() {
         <div className="settings-section-header">
           <h2 className="settings-section-title">Account Details</h2>
           <p className="settings-section-desc">Manage your business profile identity and trading lane credentials</p>
+        </div>
+
+        {/* Profile Photo Upload Row */}
+        <div className="photo-upload-row">
+          <div className="photo-preview-circle">
+            {photoUrl ? (
+              <img src={photoUrl} alt="Merchant Avatar" className="photo-preview-img" />
+            ) : (
+              <span className="photo-preview-initial">
+                {user?.initial || (businessName ? businessName[0].toUpperCase() : (name ? name[0].toUpperCase() : 'U'))}
+              </span>
+            )}
+          </div>
+          <div className="photo-upload-info">
+            <h4 className="photo-upload-title">Merchant Profile & Shop Photo</h4>
+            <p className="photo-upload-hint">
+              Upload your shop logo or merchant photo. It will replace the default initial across the registry cards, top header, and public profile.
+            </p>
+            <div className="photo-upload-btn-group">
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handlePhotoUpload}
+              />
+              <button
+                type="button"
+                className="modal-btn-primary"
+                style={{ padding: '7px 14px', fontSize: 'var(--text-xs)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingPhoto}
+              >
+                {uploadingPhoto ? 'Processing...' : '📷 Upload Custom Photo'}
+              </button>
+              {photoUrl && (
+                <button
+                  type="button"
+                  className="modal-btn-secondary"
+                  style={{ padding: '7px 14px', fontSize: 'var(--text-xs)' }}
+                  onClick={handleRemovePhoto}
+                >
+                  Remove Photo
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         <form className="settings-form" onSubmit={handleAccountSubmit}>

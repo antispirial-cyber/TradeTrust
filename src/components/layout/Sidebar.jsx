@@ -85,7 +85,11 @@ export function Sidebar({ unreadCount = 0 }) {
           <>
             <div className="sidebar-user" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
               <div className="sidebar-avatar">
-                {user.initial || (user.businessName ? user.businessName[0] : (user.name ? user.name[0] : 'U'))}
+                {user.photoUrl ? (
+                  <img src={user.photoUrl} alt={user.businessName || user.name} className="sidebar-avatar-img" />
+                ) : (
+                  user.initial || (user.businessName ? user.businessName[0] : (user.name ? user.name[0] : 'U'))
+                )}
               </div>
               <div className="sidebar-user-info">
                 <span className="sidebar-user-name">{user.businessName || user.name}</span>

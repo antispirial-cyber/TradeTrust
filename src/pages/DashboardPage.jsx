@@ -127,7 +127,11 @@ export function DashboardPage() {
       <div className="dashboard-header-card">
         <div className="dashboard-header-left">
           <div className="dashboard-photo-circle">
-            {initialLetter}
+            {user.photoUrl ? (
+              <img src={user.photoUrl} alt={user.businessName || user.name} className="dashboard-photo-img" />
+            ) : (
+              initialLetter
+            )}
           </div>
           <div className="dashboard-header-info">
             <h1 className="dashboard-business-name">{user.businessName || user.name}</h1>

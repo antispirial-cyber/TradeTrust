@@ -62,7 +62,11 @@ export function PublicProfilePage() {
       <div className="public-profile-header">
         <div className="public-profile-left">
           <div className="public-profile-avatar">
-            {initialLetter}
+            {trader.photoUrl ? (
+              <img src={trader.photoUrl} alt={trader.businessName} className="public-profile-photo-img" />
+            ) : (
+              initialLetter
+            )}
           </div>
 
           <div className="public-profile-info">

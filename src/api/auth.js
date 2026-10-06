@@ -241,6 +241,16 @@ export async function updateCurrentUser(updates) {
       const current = getCurrentUser() || {};
       const updated = { ...current, ...res.data };
       setCurrentUser(updated);
+
+      try {
+        const stored = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
+        const idx = stored.findIndex(t => String(t.id || t.traderId) === String(updated.id || updated.traderId));
+        if (idx >= 0) {
+          stored[idx] = { ...stored[idx], ...res.data };
+          localStorage.setItem('tradetrust_traders', JSON.stringify(stored));
+        }
+      } catch {}
+
       return {
         success: true,
         data: updated
@@ -251,6 +261,16 @@ export async function updateCurrentUser(updates) {
   const current = getCurrentUser() || {};
   const updated = { ...current, ...updates };
   setCurrentUser(updated);
+
+  try {
+    const stored = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
+    const idx = stored.findIndex(t => String(t.id || t.traderId) === String(updated.id || updated.traderId));
+    if (idx >= 0) {
+      stored[idx] = { ...stored[idx], ...updates };
+      localStorage.setItem('tradetrust_traders', JSON.stringify(stored));
+    }
+  } catch {}
+
   return {
     success: true,
     data: updated

@@ -24,7 +24,11 @@ export function TraderCard({ trader, onConnectToggle }) {
   return (
     <div className="trader-card" onClick={handleCardClick}>
       <div className="trader-card-photo-wrapper">
-        <span className="trader-card-initial">{initialLetter}</span>
+        {trader.photoUrl ? (
+          <img src={trader.photoUrl} alt={trader.businessName} className="trader-card-photo-img" />
+        ) : (
+          <span className="trader-card-initial">{initialLetter}</span>
+        )}
 
         {trader.isVerifiedBadge && (
           <div className="trader-card-badge-pos">

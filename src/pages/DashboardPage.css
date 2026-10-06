@@ -36,6 +36,14 @@
   font-weight: 700;
   color: var(--text-primary);
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.dashboard-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .dashboard-header-info {

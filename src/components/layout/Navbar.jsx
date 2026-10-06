@@ -40,7 +40,11 @@ export function Navbar({ unreadCount = 0 }) {
               onClick={() => navigate('/dashboard')}
               title={`${user.businessName || user.name} (${user.role})`}
             >
-              {user.initial || (user.businessName ? user.businessName[0] : (user.name ? user.name[0] : 'U'))}
+              {user.photoUrl ? (
+                <img src={user.photoUrl} alt={user.businessName || user.name} className="navbar-avatar-img" />
+              ) : (
+                user.initial || (user.businessName ? user.businessName[0] : (user.name ? user.name[0] : 'U'))
+              )}
             </div>
           </>
         ) : (
