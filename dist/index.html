@@ -9,8 +9,25 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/assets/index-DcZCXkhT.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-CfnULN_0.css">
+    <script>
+      try {
+        const s = localStorage.getItem('tradetrust_settings');
+        if (s) {
+          const parsed = JSON.parse(s);
+          if (parsed.themeMode === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.documentElement.style.colorScheme = 'light';
+          }
+          if (parsed.accentColor) {
+            document.documentElement.style.setProperty('--accent-color', parsed.accentColor);
+            document.documentElement.style.setProperty('--accent-muted', parsed.accentColor + '26');
+            document.documentElement.style.setProperty('--accent-hover', parsed.accentColor + 'dd');
+          }
+        }
+      } catch (e) {}
+    </script>
+    <script type="module" crossorigin src="/assets/index-Cg1ONKx0.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DMxFzB57.css">
   </head>
   <body>
     <div id="root"></div>

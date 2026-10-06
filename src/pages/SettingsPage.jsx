@@ -7,7 +7,13 @@ import './SettingsPage.css';
 
 export function SettingsPage() {
   const { user, updateProfile } = useAuth();
-  const { accentColor, setAccentColor, persistAccentColor } = useTheme();
+  const {
+    accentColor,
+    setAccentColor,
+    themeMode,
+    setThemeMode,
+    persistAppearance
+  } = useTheme();
   const { showToast } = useToast();
 
   // Account details form
@@ -20,6 +26,7 @@ export function SettingsPage() {
   const [password, setPassword] = useState('••••••••');
 
   // Appearance state
+  const [selectedTheme, setSelectedTheme] = useState(themeMode || 'dark');
   const [selectedColor, setSelectedColor] = useState(accentColor);
   const [hexInput, setHexInput] = useState(accentColor);
 
@@ -39,9 +46,20 @@ export function SettingsPage() {
     setHexInput(accentColor);
   }, [accentColor]);
 
+  useEffect(() => {
+    if (themeMode) {
+      setSelectedTheme(themeMode);
+    }
+  }, [themeMode]);
+
   const handleAccountSubmit = (e) => {
     e.preventDefault();
     showComingSoon(e);
+  };
+
+  const handleThemeSelect = (mode) => {
+    setSelectedTheme(mode);
+    setThemeMode(mode);
   };
 
   const handleColorSelect = (color) => {
@@ -60,8 +78,8 @@ export function SettingsPage() {
   };
 
   const handleSaveAppearance = async () => {
-    await persistAccentColor(selectedColor);
-    showToast('Accent color saved!');
+    await persistAppearance({ themeMode: selectedTheme, accentColor: selectedColor });
+    showToast(`Appearance saved! Mode: ${selectedTheme === 'light' ? 'Light Slate' : 'Dark Obsidian'}`);
   };
 
   return (
@@ -156,13 +174,47 @@ export function SettingsPage() {
       {/* Appearance Section */}
       <div className="settings-section-card">
         <div className="settings-section-header">
-          <h2 className="settings-section-title">Appearance & Accent Color</h2>
-          <p className="settings-section-desc">Personalize your platform accent color with live updates across all pages</p>
+          <h2 className="settings-section-title">Appearance & Themes</h2>
+          <p className="settings-section-desc">Personalize your platform canvas theme and merchant accent color with live site-wide updates</p>
         </div>
 
-        <div>
+        {/* Theme Mode Selector (Dark Obsidian vs Light Slate) */}
+        <div className="theme-mode-section">
           <label className="form-label" style={{ marginBottom: 'var(--space-sm)', display: 'block' }}>
-            Select Color Swatch
+            Platform Canvas Theme
+          </label>
+          <div className="theme-mode-toggle-group">
+            <button
+              type="button"
+              className={`theme-mode-card-btn ${selectedTheme === 'dark' ? 'selected' : ''}`}
+              onClick={() => handleThemeSelect('dark')}
+            >
+              <div className="theme-mode-card-icon">🌙</div>
+              <div className="theme-mode-card-info">
+                <span className="theme-mode-card-title">Dark Obsidian</span>
+                <span className="theme-mode-card-desc">Bazaar trading night palette with deep navy cards</span>
+              </div>
+              {selectedTheme === 'dark' && <span className="theme-mode-active-indicator">✓ Active</span>}
+            </button>
+
+            <button
+              type="button"
+              className={`theme-mode-card-btn ${selectedTheme === 'light' ? 'selected' : ''}`}
+              onClick={() => handleThemeSelect('light')}
+            >
+              <div className="theme-mode-card-icon">☀️</div>
+              <div className="theme-mode-card-info">
+                <span className="theme-mode-card-title">Light Slate</span>
+                <span className="theme-mode-card-desc">High-contrast 2-tone canvas with crisp card boundaries</span>
+              </div>
+              {selectedTheme === 'light' && <span className="theme-mode-active-indicator">✓ Active</span>}
+            </button>
+          </div>
+        </div>
+
+        <div style={{ paddingTop: 'var(--space-md)', borderTop: '1px solid var(--border-subtle)' }}>
+          <label className="form-label" style={{ marginBottom: 'var(--space-sm)', display: 'block' }}>
+            Accent Color Swatch
           </label>
           <div className="appearance-palette">
             {PRESET_ACCENT_COLORS.map((color) => (
