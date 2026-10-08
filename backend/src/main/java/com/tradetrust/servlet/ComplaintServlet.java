@@ -82,6 +82,11 @@ public class ComplaintServlet extends HttpServlet {
                 return;
             }
 
+            if (path != null && path.contains("/retake")) {
+                handleRetake(req, resp, currentTraderId, path);
+                return;
+            }
+
             // File a new complaint
             handleCreate(req, resp, currentTraderId);
         } catch (Exception e) {
@@ -225,5 +230,38 @@ public class ComplaintServlet extends HttpServlet {
 
         Complaint updated = complaintDAO.findById(complaintId);
         JsonUtil.writeSuccess(resp, "Dispute escalated to administration", updated);
+    }
+
+    private void handleRetake(HttpServletRequest req, HttpServletResponse resp, int currentTraderId, String path) throws Exception {
+        // Path format: /{complaintId}/retake
+        String[] parts = path.split("/");
+        int complaintId = Integer.parseInt(parts[1]);
+        Complaint complaint = complaintDAO.findById(complaintId);
+        if (complaint == null) {
+            JsonUtil.writeError(resp, HttpServletResponse.SC_NOT_FOUND, "Complaint not found");
+            return;
+        }
+
+        if (complaint.getReporterId() != currentTraderId) {
+            JsonUtil.writeError(resp, HttpServletResponse.SC_FORBIDDEN, "Only the user who filed this complaint can request to retake it");
+            return;
+        }
+
+        if ("RETAKE_APPROVED".equalsIgnoreCase(complaint.getStatus())) {
+            JsonUtil.writeError(resp, HttpServletResponse.SC_BAD_REQUEST, "Complaint has already been retaken and approved");
+            return;
+        }
+
+        complaintDAO.updateStatus(complaintId, "RETAKE_REQUESTED");
+
+        Notification notif = new Notification();
+        notif.setRecipientId(complaint.getReportedId());
+        notif.setType("DISPUTE_RETAKE");
+        notif.setMessage("Filing party (User ID: " + currentTraderId + ") has submitted a Retake Complaint request on Dispute #" + complaintId + ", pending Admin approval.");
+        notif.setLinkRef("/disputes/" + complaintId);
+        notificationDAO.create(notif);
+
+        Complaint updated = complaintDAO.findById(complaintId);
+        JsonUtil.writeSuccess(resp, "Complaint retake requested. Flagged to Market Association Admin for approval.", updated);
     }
 }

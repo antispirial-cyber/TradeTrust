@@ -27,13 +27,13 @@ export function ContactModal({ onClose }) {
               <span>Zaveri Bazaar Trade Facilitation Cell, Kalbadevi, Mumbai 400002</span>
             </div>
             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-              📞 <strong>Helpline:</strong> +91 22 2345 6789 (Mon – Sat, 10:00 AM – 7:00 PM)
+              <strong>Helpline:</strong> +91 22 2345 6789 (Mon – Sat, 10:00 AM – 7:00 PM)
             </div>
             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-              ✉️ <strong>Email:</strong> helpdesk@tradetrust.local
+              <strong>Email:</strong> helpdesk@tradetrust.local
             </div>
             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-              💬 <strong>WhatsApp Grievance Desk:</strong> +91 98200 99999
+              <strong>WhatsApp Grievance Desk:</strong> +91 98200 99999
             </div>
           </div>
         </div>

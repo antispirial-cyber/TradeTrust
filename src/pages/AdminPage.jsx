@@ -222,7 +222,7 @@ export function AdminPage() {
               <code>Password: <strong>tradetrust</strong></code>
             </div>
             <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
-              ℹ️ Hardcoded across all devices and web deployments. All previous legacy admin accounts have been purged.
+              Hardcoded across all devices and web deployments. All previous legacy admin accounts have been purged.
             </p>
           </div>
         </div>
@@ -235,6 +235,9 @@ export function AdminPage() {
     if (complaintFilter === 'ALL') return true;
     if (complaintFilter === 'PENDING') {
       return c.status === 'ESCALATED_TO_ADMIN' || c.status === 'ROUND_1_PENDING' || c.status === 'ROUND_2_PENDING';
+    }
+    if (complaintFilter === 'RETAKE_REQUESTED') {
+      return c.status === 'RETAKE_REQUESTED';
     }
     return c.status === complaintFilter;
   });
@@ -304,16 +307,16 @@ export function AdminPage() {
         <div className="admin-metric-card">
           <div className="metric-header">
             <span className="metric-title">Registered Merchants</span>
-            <span className="metric-icon">🏪</span>
+            <span className="metric-caption-tag">Directory</span>
           </div>
           <div className="metric-value">{metrics.totalTraders || traders.length}</div>
-          <div className="metric-caption">Across 5 Mumbai Bazaars</div>
+          <div className="metric-caption">Across Mumbai Bazaars</div>
         </div>
 
         <div className="admin-metric-card alert">
           <div className="metric-header">
             <span className="metric-title">Pending Arbitration</span>
-            <span className="metric-icon">⚖️</span>
+            <span className="metric-caption-tag">Queue</span>
           </div>
           <div className="metric-value">{metrics.pendingComplaints}</div>
           <div className="metric-caption">Awaiting Association Verdict</div>
@@ -322,7 +325,7 @@ export function AdminPage() {
         <div className="admin-metric-card warning">
           <div className="metric-header">
             <span className="metric-title">Frozen Scores</span>
-            <span className="metric-icon">❄️</span>
+            <span className="metric-caption-tag">Under Inquiry</span>
           </div>
           <div className="metric-value">{metrics.frozenTraders}</div>
           <div className="metric-caption">Merchants Restricted Under Review</div>
@@ -331,9 +334,9 @@ export function AdminPage() {
         <div className="admin-metric-card success">
           <div className="metric-header">
             <span className="metric-title">Average Bazaar Trust</span>
-            <span className="metric-icon">⭐</span>
+            <span className="metric-caption-tag">Benchmark</span>
           </div>
-          <div className="metric-value">{metrics.averageTrustScore || '8.40'} / 10</div>
+          <div className="metric-value">{metrics.averageTrustScore || '10.00'} / 10</div>
           <div className="metric-caption">Cluster Health Benchmark</div>
         </div>
       </div>
@@ -354,7 +357,7 @@ export function AdminPage() {
           className={`admin-tab-btn ${activeTab === 'merchants' ? 'active' : ''}`}
           onClick={() => setActiveTab('merchants')}
         >
-          <span>🏪 Merchant Registry ({traders.length})</span>
+          <span>Merchant Registry ({traders.length})</span>
         </button>
 
         <button
@@ -362,7 +365,7 @@ export function AdminPage() {
           className={`admin-tab-btn ${activeTab === 'broadcast' ? 'active' : ''}`}
           onClick={() => setActiveTab('broadcast')}
         >
-          <span>📢 Association Circulars</span>
+          <span>Association Circulars</span>
         </button>
 
         <button
@@ -384,20 +387,20 @@ export function AdminPage() {
               <div>
                 <h3 className="panel-heading">Association Dispute Queue</h3>
                 <p className="panel-subheading">
-                  Escalated merchant claims and payment default reports requiring administrative resolution.
+                  Escalated merchant claims, retake requests, and payment default reports requiring administrative resolution.
                 </p>
               </div>
 
               {/* Filter pills */}
               <div className="filter-pill-group">
-                {['ALL', 'PENDING', 'APPROVED', 'REJECTED'].map((filter) => (
+                {['ALL', 'PENDING', 'RETAKE_REQUESTED', 'APPROVED', 'REJECTED'].map((filter) => (
                   <button
                     key={filter}
                     type="button"
                     className={`filter-pill-btn ${complaintFilter === filter ? 'active' : ''}`}
                     onClick={() => setComplaintFilter(filter)}
                   >
-                    {filter === 'ALL' ? 'All Disputes' : filter}
+                    {filter === 'ALL' ? 'All Disputes' : filter === 'RETAKE_REQUESTED' ? 'Retake Requests' : filter}
                   </button>
                 ))}
               </div>
@@ -405,29 +408,32 @@ export function AdminPage() {
 
             {filteredComplaints.length === 0 ? (
               <div className="admin-empty-state">
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>⚖️</div>
                 <p>No disputes matching the selected filter ({complaintFilter}).</p>
               </div>
             ) : (
               <div className="disputes-list">
                 {filteredComplaints.map((c) => {
-                  const isPending = c.status === 'ESCALATED_TO_ADMIN' || c.status === 'ROUND_1_PENDING' || c.status === 'ROUND_2_PENDING';
+                  const isRetakeRequested = c.status === 'RETAKE_REQUESTED';
+                  const isPending = !isRetakeRequested && (c.status === 'ESCALATED_TO_ADMIN' || c.status === 'ROUND_1_PENDING' || c.status === 'ROUND_2_PENDING');
                   const isApproved = c.status === 'APPROVED';
                   const isRejected = c.status === 'REJECTED';
+                  const isRetakeApproved = c.status === 'RETAKE_APPROVED';
                   const reportedTraderObj = traders.find(t =>
                     String(t.id || t.traderId) === String(c.reportedId) ||
                     (c.reportedName && t.businessName && t.businessName.toLowerCase() === c.reportedName.toLowerCase())
                   );
 
                   return (
-                    <div key={c.id || c.complaintId} className={`dispute-card ${isPending ? 'pending' : ''}`}>
+                    <div key={c.id || c.complaintId} className={`dispute-card ${isPending || isRetakeRequested ? 'pending' : ''}`}>
                       <div className="dispute-card-header">
                         <div className="dispute-parties">
                           <span className="case-id">Case #{c.id || c.complaintId}</span>
-                          <span className="party-reporter">Filing Party: <strong>{c.reporterName || 'Verified Trader'}</strong></span>
-                          <span className="party-arrow">➔</span>
+                          <span className="party-reporter">
+                            Filed by: <strong>{c.reporterName || 'Verified Trader'}</strong> (User ID: {c.reporterId})
+                          </span>
+                          <span className="party-arrow">&rarr;</span>
                           <span className="party-reported">
-                            Reported: <strong>{c.reportedName || ('Merchant #' + c.reportedId)}</strong>
+                            Trader Card: <strong>{c.reportedName || ('Merchant #' + c.reportedId)}</strong>
                             {c.reportedCluster && <span className="cluster-tag">{c.reportedCluster}</span>}
                             {reportedTraderObj && (
                               <span style={{
@@ -440,7 +446,7 @@ export function AdminPage() {
                                 border: '1px solid rgba(255,255,255,0.1)',
                                 color: Number(reportedTraderObj.trustScore) >= 8.5 ? '#10B981' : Number(reportedTraderObj.trustScore) >= 6.0 ? '#F59E0B' : '#EF4444'
                               }}>
-                                ★ {Number(reportedTraderObj.trustScore).toFixed(2)}
+                                Score: {Number(reportedTraderObj.trustScore).toFixed(2)}
                               </span>
                             )}
                           </span>
@@ -458,10 +464,53 @@ export function AdminPage() {
                         <p className="dispute-desc">"{c.description}"</p>
                         <div className="dispute-footer-info">
                           <span>Incident Date: {c.incidentDate || 'Recent'}</span>
-                          {c.proofPath && <span>Evidence Document: 📎 {c.proofPath}</span>}
+                          {c.proofPath && (
+                            <span>
+                              Evidence Document:{' '}
+                              <a
+                                href={c.proofPath}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: 'var(--accent-blue)', textDecoration: 'underline', fontWeight: 600 }}
+                              >
+                                [View Attached File]
+                              </a>
+                            </span>
+                          )}
                           {c.verdictDate && <span>Verdict Logged: {c.verdictDate}</span>}
                         </div>
                       </div>
+
+                      {/* Retake Request Alert Banner for Admin */}
+                      {isRetakeRequested && (
+                        <div style={{
+                          margin: '10px 0',
+                          padding: '10px 14px',
+                          background: 'rgba(239, 68, 68, 0.08)',
+                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          borderRadius: '6px'
+                        }}>
+                          <div style={{ fontSize: '13px', fontWeight: 600, color: '#EF4444', marginBottom: '8px' }}>
+                            [Retake Flagged]: The filing user (User ID: {c.reporterId}) has requested to retake/withdraw this complaint.
+                          </div>
+                          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              className="action-btn-approve"
+                              onClick={() => handleResolveDispute(c.id || c.complaintId, 'RETAKE_APPROVED')}
+                            >
+                              Approve Retake (Withdraw Complaint & Restore Score)
+                            </button>
+                            <button
+                              type="button"
+                              className="action-btn-reject"
+                              onClick={() => handleResolveDispute(c.id || c.complaintId, 'RETAKE_REJECTED')}
+                            >
+                              Reject Retake
+                            </button>
+                          </div>
+                        </div>
+                      )}
 
                       <div className="dispute-actions-row">
                         {isPending ? (
@@ -471,22 +520,23 @@ export function AdminPage() {
                               className="action-btn-approve"
                               onClick={() => handleResolveDispute(c.id || c.complaintId, 'APPROVED')}
                             >
-                              ✅ Approve Complaint (Deduct Trust Score)
+                              Approve Complaint (Deduct Trust Score)
                             </button>
                             <button
                               type="button"
                               className="action-btn-reject"
                               onClick={() => handleResolveDispute(c.id || c.complaintId, 'REJECTED')}
                             >
-                              ❌ Dismiss / Reject Claim
+                              Dismiss / Reject Claim
                             </button>
                           </>
-                        ) : (
+                        ) : !isRetakeRequested ? (
                           <div className="resolved-status-text">
-                            {isApproved && '✅ Resolved by Association: Complaint Approved. Penalty applied to merchant record.'}
-                            {isRejected && '🛡️ Resolved by Association: Complaint Dismissed. Score restored.'}
+                            {isApproved && 'Resolved by Association: Complaint Approved. Penalty applied to merchant record.'}
+                            {isRejected && 'Resolved by Association: Complaint Dismissed. Score restored.'}
+                            {isRetakeApproved && 'Resolved by Association: Retake Approved. Complaint withdrawn and score restored.'}
                           </div>
-                        )}
+                        ) : null}
 
                         <button
                           type="button"
@@ -500,7 +550,7 @@ export function AdminPage() {
                             }
                           }}
                         >
-                          ❄️ Freeze / Unfreeze Merchant
+                          Freeze / Unfreeze Merchant
                         </button>
                       </div>
                     </div>
@@ -598,13 +648,13 @@ export function AdminPage() {
                           <div className="score-cell-pill" style={{
                             color: score >= 8.5 ? '#10B981' : score >= 6.0 ? '#F59E0B' : '#EF4444'
                           }}>
-                            ★ {score.toFixed(2)}
+                            Score: {score.toFixed(2)}
                           </div>
                         </td>
 
                         <td>
                           {isFrozen ? (
-                            <span className="badge-frozen-tag">❄️ FROZEN</span>
+                            <span className="badge-frozen-tag">FROZEN</span>
                           ) : (
                             <span className="badge-active-tag">Active</span>
                           )}
@@ -617,7 +667,7 @@ export function AdminPage() {
                             onClick={() => handleToggleBadge(t)}
                             title="Click to toggle association verification"
                           >
-                            {t.isVerifiedBadge ? '✓ Verified' : '+ Verify'}
+                            {t.isVerifiedBadge ? '[Verified]' : '+ Verify'}
                           </button>
                         </td>
 
@@ -650,7 +700,7 @@ export function AdminPage() {
                               onClick={() => navigate(`/profile/${t.id || t.traderId}`)}
                               title="View Trader Public Registry Card"
                             >
-                              Profile ↗
+                              Profile
                             </button>
                           </div>
                         </td>
@@ -712,7 +762,7 @@ export function AdminPage() {
               </div>
 
               <button type="submit" className="admin-gate-btn" style={{ maxWidth: '280px' }} disabled={isBroadcasting}>
-                {isBroadcasting ? 'Broadcasting...' : '📢 Publish Circular to All Traders'}
+                {isBroadcasting ? 'Broadcasting...' : 'Publish Circular to All Traders'}
               </button>
             </form>
           </div>

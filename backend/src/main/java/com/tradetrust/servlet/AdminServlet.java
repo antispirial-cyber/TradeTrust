@@ -82,6 +82,11 @@ public class AdminServlet extends HttpServlet {
                 return;
             }
 
+            if (path.startsWith("/trader/") && path.endsWith("/score")) {
+                handleSetTraderScore(req, resp, path);
+                return;
+            }
+
             JsonUtil.writeError(resp, HttpServletResponse.SC_NOT_FOUND, "Admin action not found: " + path);
         } catch (Exception e) {
             e.printStackTrace();
@@ -95,10 +100,13 @@ public class AdminServlet extends HttpServlet {
         int complaintId = Integer.parseInt(parts[2]);
 
         JsonNode root = JsonUtil.getMapper().readTree(req.getInputStream());
-        String status = root.path("status").asText(null); // APPROVED or REJECTED
+        String status = root.path("status").asText(null);
 
-        if (status == null || (!status.equalsIgnoreCase("APPROVED") && !status.equalsIgnoreCase("REJECTED"))) {
-            JsonUtil.writeError(resp, HttpServletResponse.SC_BAD_REQUEST, "Status must be APPROVED or REJECTED");
+        if (status == null || (!status.equalsIgnoreCase("APPROVED") &&
+                               !status.equalsIgnoreCase("REJECTED") &&
+                               !status.equalsIgnoreCase("RETAKE_APPROVED") &&
+                               !status.equalsIgnoreCase("RETAKE_REJECTED"))) {
+            JsonUtil.writeError(resp, HttpServletResponse.SC_BAD_REQUEST, "Status must be APPROVED, REJECTED, RETAKE_APPROVED, or RETAKE_REJECTED");
             return;
         }
 
@@ -108,31 +116,77 @@ public class AdminServlet extends HttpServlet {
             return;
         }
 
-        complaintDAO.updateStatus(complaintId, status.toUpperCase());
+        String finalStatus = status.toUpperCase();
+        if ("RETAKE_REJECTED".equalsIgnoreCase(finalStatus)) {
+            // Revert back to escalated state
+            finalStatus = "ESCALATED_TO_ADMIN";
+        }
 
-        // If approved, penalize reported trader's score
-        if ("APPROVED".equalsIgnoreCase(status)) {
+        complaintDAO.updateStatus(complaintId, finalStatus);
+
+        // Score handling
+        if ("APPROVED".equalsIgnoreCase(finalStatus)) {
             try (Connection conn = DBConnection.getConnection()) {
                 ScoreUtil.recalculateAndSave(complaint.getReportedId(), conn);
             }
+        } else if ("RETAKE_APPROVED".equalsIgnoreCase(finalStatus)) {
+            // Restore score if previously deducted, and unfreeze
+            try (Connection conn = DBConnection.getConnection()) {
+                ScoreUtil.recalculateAndSave(complaint.getReportedId(), conn);
+            }
+            traderDAO.freezeScore(complaint.getReportedId(), false);
+        } else if ("REJECTED".equalsIgnoreCase(finalStatus)) {
+            traderDAO.freezeScore(complaint.getReportedId(), false);
         }
 
         // Notify both parties
+        String filerMsg = "RETAKE_APPROVED".equalsIgnoreCase(finalStatus)
+                ? "Admin has approved your retake/withdrawal of Dispute #" + complaintId + ". The claim is withdrawn."
+                : "Admin has resolved Dispute #" + complaintId + ": " + finalStatus;
+        String reportedMsg = "RETAKE_APPROVED".equalsIgnoreCase(finalStatus)
+                ? "Admin has approved the retake of Dispute #" + complaintId + ". Score penalty restored and account active."
+                : "Admin has resolved Dispute #" + complaintId + ": " + finalStatus;
+
         Notification n1 = new Notification();
         n1.setRecipientId(complaint.getReporterId());
         n1.setType("DISPUTE_VERDICT");
-        n1.setMessage("Admin has resolved Dispute #" + complaintId + ": " + status.toUpperCase());
+        n1.setMessage(filerMsg);
         n1.setLinkRef("/disputes/" + complaintId);
         notificationDAO.create(n1);
 
         Notification n2 = new Notification();
         n2.setRecipientId(complaint.getReportedId());
         n2.setType("DISPUTE_VERDICT");
-        n2.setMessage("Admin has resolved Dispute #" + complaintId + ": " + status.toUpperCase());
+        n2.setMessage(reportedMsg);
         n2.setLinkRef("/disputes/" + complaintId);
         notificationDAO.create(n2);
 
-        JsonUtil.writeSuccess(resp, "Dispute resolved as " + status.toUpperCase(), null);
+        JsonUtil.writeSuccess(resp, "Dispute status updated: " + finalStatus, null);
+    }
+
+    private void handleSetTraderScore(HttpServletRequest req, HttpServletResponse resp, String path) throws Exception {
+        // Path: /trader/{id}/score
+        String[] parts = path.split("/");
+        int traderId = Integer.parseInt(parts[2]);
+
+        JsonNode root = JsonUtil.getMapper().readTree(req.getInputStream());
+        double score = root.path("score").asDouble(-1.0);
+        if (score < 0.0 || score > 10.0) {
+            JsonUtil.writeError(resp, HttpServletResponse.SC_BAD_REQUEST, "Score must be between 0.00 and 10.00");
+            return;
+        }
+
+        java.math.BigDecimal scoreVal = java.math.BigDecimal.valueOf(score).setScale(2, java.math.RoundingMode.HALF_UP);
+        traderDAO.updateScore(traderId, scoreVal);
+
+        Notification n = new Notification();
+        n.setRecipientId(traderId);
+        n.setType("SCORE_ADJUSTED");
+        n.setMessage("Your trust score has been manually adjusted to " + scoreVal + " by Market Association Admin.");
+        n.setLinkRef("/dashboard");
+        notificationDAO.create(n);
+
+        JsonUtil.writeSuccess(resp, "Trader score adjusted to " + scoreVal, scoreVal);
     }
 
     private void handleFreezeTrader(HttpServletRequest req, HttpServletResponse resp, String path) throws Exception {

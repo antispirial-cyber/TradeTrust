@@ -4,7 +4,4 @@ backend/uploads/
 uploads/
 .DS_Store
 *.log
-MEMORY.md
-memory.md
-*.memory.md
-
+Java_Class_notes.pdf

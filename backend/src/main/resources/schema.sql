@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS complaints (
     amount_disputed DECIMAL(12,2),
     incident_date DATE NOT NULL,
     proof_path VARCHAR(255),
-    status ENUM('ROUND_1_PENDING','ROUND_1_COUNTER_FILED','ROUND_2_PENDING','ROUND_2_COUNTER_FILED','ESCALATED_TO_ADMIN','APPROVED','REJECTED') DEFAULT 'ROUND_1_PENDING',
+    status ENUM('ROUND_1_PENDING','ROUND_1_COUNTER_FILED','ROUND_2_PENDING','ROUND_2_COUNTER_FILED','ESCALATED_TO_ADMIN','APPROVED','REJECTED','RETAKE_REQUESTED','RETAKE_APPROVED') DEFAULT 'ROUND_1_PENDING',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (reporter_id) REFERENCES traders(trader_id) ON DELETE CASCADE,
@@ -107,29 +107,13 @@ CREATE TABLE IF NOT EXISTS trader_settings (
     FOREIGN KEY (trader_id) REFERENCES traders(trader_id) ON DELETE CASCADE
 );
 
--- Seed Data (Default Password for test accounts: password123 -> SHA-256: ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f)
+-- Official Seed Data (Password for all traders and admin: tradetrust -> SHA-256: e041baff2d3294f61dcc6b8c265e26562bfd8b21c9400ee8dc6d7ab6e1e09e0a)
 INSERT IGNORE INTO traders (trader_id, name, phone, business_name, business_desc, role, cluster, sector, password_hash, trust_score, is_verified_badge, created_at)
 VALUES
-(1, 'Rajesh Mehta', '9820012345', 'Mehta Jewellers Retail', 'Retail showroom in Zaveri Bazaar specializing in bridal jewellery, temple collections, and certified diamonds.', 'RETAILER', 'Zaveri Bazaar', 'Ornaments & Jewellery', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 10.00, TRUE, '2023-01-15 10:00:00'),
-(2, 'Bhavin Shah', '9820054321', 'Shah Bullion & Pearls', 'Wholesale supplier of pearl strings and pure silver bullions.', 'RETAILER', 'Zaveri Bazaar', 'Ornaments & Jewellery', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 10.00, TRUE, '2023-04-10 11:30:00'),
-(3, 'Naveen Chordia', '9820198765', 'Navkar Diamond & Gems', 'Wholesale supplier of loose certified solitaires, polki, and uncut diamonds catering to high-end jewellery houses.', 'WHOLESALER', 'Zaveri Bazaar', 'Ornaments & Jewellery', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 10.00, TRUE, '2022-11-20 09:15:00'),
-(4, 'Zubin Zaveri', '9820234567', 'Zaveri Gold House', 'Renowned retailer of 22K, 18K and silver jewellery with custom design services.', 'RETAILER', 'Zaveri Bazaar', 'Gold & Silver Jewellery', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 10.00, TRUE, '2023-02-01 14:00:00'),
-(5, 'Sonal Parekh', '9820345678', 'Sonal Gems & Crafts', 'Supplier of certified gemstones, beads and jewellery raw materials for global markets.', 'WHOLESALER', 'Zaveri Bazaar', 'Precious Stones', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 9.80, TRUE, '2023-03-14 16:45:00'),
-(6, 'Dharmesh Vora', '9820456789', 'Dadar Fabrics Emporium', 'Wholesale textiles, cotton weaves, and ethnic dress materials distributing across Greater Mumbai.', 'WHOLESALER', 'Dadar Market', 'Fabrics', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 8.50, TRUE, '2023-05-18 10:00:00'),
-(7, 'Mohanlal Silk Traders', '9820567890', 'Mangaldas Silk House', 'Bulk distributors of pure Banarasi, Kanjeevaram and raw silk fabrics.', 'WHOLESALER', 'Mangaldas Market', 'Fabrics', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 7.20, FALSE, '2023-08-22 12:00:00'),
-(8, 'Lalit Electronics', '9820678901', 'Lamington Component Hub', 'Commercial microchips, power supplies, and test equipment retailer.', 'RETAILER', 'Lamington Road', 'Electronics', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 4.80, FALSE, '2023-09-05 13:20:00'),
-(9, 'Chetan Stationery Co.', '9820789012', 'Crawford Stationery Depot', 'Bulk paper distributor, packaging supplier, and corporate stationery importer.', 'WHOLESALER', 'Crawford Market', 'Stationery', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 2.10, FALSE, '2023-10-12 15:10:00');
-
--- Initial Settings
-INSERT IGNORE INTO trader_settings (setting_id, trader_id, accent_color)
-VALUES (1, 1, '#1E6FFB');
-
--- Initial Connections
-INSERT IGNORE INTO connections (connection_id, requester_id, receiver_id, status)
-VALUES
-(1, 1, 3, 'ACCEPTED'),
-(2, 1, 4, 'ACCEPTED'),
-(3, 1, 5, 'ACCEPTED');
+(1, 'Rajpurohit Bangles', '9820011111', 'Rajpurohit Bangles', 'Wholesale manufacturer and distributor of traditional bangles, bridal chudas, and ethnic ornaments.', 'WHOLESALER', 'Zaveri Bazaar', 'Ornaments & Jewellery', 'e041baff2d3294f61dcc6b8c265e26562bfd8b21c9400ee8dc6d7ab6e1e09e0a', 10.00, TRUE, '2024-01-10 10:00:00'),
+(2, 'Sharma Electronics', '9820022222', 'Sharma Electronics', 'Retailer and distributor of commercial electronics, test meters, and hardware components.', 'RETAILER', 'Lamington Road', 'Electronics', 'e041baff2d3294f61dcc6b8c265e26562bfd8b21c9400ee8dc6d7ab6e1e09e0a', 10.00, TRUE, '2024-02-15 11:30:00'),
+(3, 'Seliya Stationary', '9820033333', 'Seliya Stationary', 'Bulk paper supplier, commercial printing stationery, and office ledger materials.', 'WHOLESALER', 'Crawford Market', 'Stationery', 'e041baff2d3294f61dcc6b8c265e26562bfd8b21c9400ee8dc6d7ab6e1e09e0a', 10.00, TRUE, '2024-03-20 09:15:00'),
+(4, 'Sankhe Jwells', '9820044444', 'Sankhe Jwells', 'Showroom specializing in hallmarked gold jewellery, silver ornaments, and custom designs.', 'RETAILER', 'Zaveri Bazaar', 'Gold & Silver Jewellery', 'e041baff2d3294f61dcc6b8c265e26562bfd8b21c9400ee8dc6d7ab6e1e09e0a', 10.00, TRUE, '2024-04-05 14:00:00');
 
 -- Universal Admin (username: Admin, password: tradetrust -> SHA-256: e041baff2d3294f61dcc6b8c265e26562bfd8b21c9400ee8dc6d7ab6e1e09e0a)
 DELETE FROM admins;

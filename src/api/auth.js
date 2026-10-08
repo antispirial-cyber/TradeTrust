@@ -142,67 +142,30 @@ export async function login({ phone, password }) {
   }
 
   // 2. Seamless Static / Vercel fallback (when backend server is not running on the static host)
-  let authenticatedUser = null;
+  let storedTraders = [];
+  try {
+    storedTraders = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
+  } catch {}
 
-  // Check seed trader: Rajesh Mehta (9820012345 / password123)
-  if (cleanPhone === '9820012345') {
-    if (cleanPass && cleanPass !== 'password123') {
-      return {
-        success: false,
-        message: 'Incorrect password for seed trader account.'
-      };
-    }
-    let storedTraders = [];
-    try {
-      storedTraders = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
-    } catch {}
-    const existing = storedTraders.find(t => normalizePhone(t.phone) === '9820012345' || String(t.id || t.traderId) === '1');
-
-    authenticatedUser = existing ? { ...existing, id: existing.id || 1, traderId: existing.traderId || 1 } : {
-      id: 1,
-      traderId: 1,
-      name: 'Rajesh Mehta',
-      phone: '9820012345',
-      businessName: 'Mehta Jewellers Retail',
-      businessDesc: 'Retail showroom in Zaveri Bazaar specializing in bridal jewellery, temple collections, and certified diamonds.',
-      role: 'RETAILER',
-      cluster: 'Zaveri Bazaar',
-      sector: 'Ornaments & Jewellery',
-      trustScore: 10.00,
-      isVerifiedBadge: true,
-      scoreFrozen: false,
-      initial: 'R'
-    };
-  } else {
-    // Check stored custom registered traders
-    let storedTraders = [];
-    try {
-      storedTraders = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
-      authenticatedUser = storedTraders.find(t => normalizePhone(t.phone) === cleanPhone);
-    } catch {}
-
-    if (authenticatedUser) {
-      if (authenticatedUser.password && cleanPass && authenticatedUser.password !== cleanPass) {
-        return {
-          success: false,
-          message: 'Incorrect password. Please verify and try again.'
-        };
-      }
-    } else {
-      // Check initial mock traders
-      authenticatedUser = INITIAL_TRADERS.find(t => normalizePhone(t.phone) === cleanPhone);
-      if (authenticatedUser) {
-        if (cleanPass && cleanPass !== 'password123') {
-          return {
-            success: false,
-            message: 'Incorrect password. Demo accounts use password: password123'
-          };
-        }
-      }
-    }
-  }
+  const allAvailable = [...storedTraders, ...INITIAL_TRADERS];
+  const authenticatedUser = allAvailable.find(t => {
+    const tPhone = normalizePhone(t.phone);
+    const tBiz = (t.businessName || '').toLowerCase().trim();
+    const tName = (t.name || '').toLowerCase().trim();
+    const matchPhone = cleanPhone && tPhone === cleanPhone;
+    const matchBiz = rawInput && (tBiz === rawInput.toLowerCase() || tName === rawInput.toLowerCase());
+    return matchPhone || matchBiz;
+  });
 
   if (authenticatedUser) {
+    const expectedPass = authenticatedUser.password || 'tradetrust';
+    if (cleanPass !== expectedPass) {
+      return {
+        success: false,
+        message: 'Incorrect password. Please verify and try again.'
+      };
+    }
+
     const mockToken = 'tt-session-' + Date.now();
     setAuthToken(mockToken);
     setCurrentUser(authenticatedUser);
@@ -215,7 +178,7 @@ export async function login({ phone, password }) {
 
   return {
     success: false,
-    message: 'Trader account not found. Please register your business or use Demo Login.'
+    message: 'Trader account not found. Please register your business or verify your trader card credentials.'
   };
 }
 

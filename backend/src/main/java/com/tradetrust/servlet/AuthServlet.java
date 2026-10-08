@@ -135,21 +135,7 @@ public class AuthServlet extends HttpServlet {
 
                     Map<String, Object> data = new HashMap<>();
                     data.put("token", token);
-                    data.put("user", Map.of(
-                            "id", "admin-1",
-                            "traderId", "admin-1",
-                            "name", "Market Association Admin",
-                            "username", "Admin",
-                            "phone", "Admin",
-                            "businessName", "TradeTrust Arbitration Desk",
-                            "role", "ADMIN",
-                            "cluster", "South Mumbai Central Association",
-                            "sector", "Market Governance",
-                            "trustScore", 10.00,
-                            "isVerifiedBadge", true,
-                            "scoreFrozen", false,
-                            "initial", "A"
-                    ));
+                    data.put("user", createAdminUserMap());
                     JsonUtil.writeSuccess(resp, "Admin login successful", data);
                     return;
                 } else {
@@ -206,21 +192,7 @@ public class AuthServlet extends HttpServlet {
                             "username", "Admin",
                             "role", "ADMIN"
                     ));
-                    data.put("user", Map.of(
-                            "id", "admin-1",
-                            "traderId", "admin-1",
-                            "name", "Market Association Admin",
-                            "username", "Admin",
-                            "phone", "Admin",
-                            "businessName", "TradeTrust Arbitration Desk",
-                            "role", "ADMIN",
-                            "cluster", "South Mumbai Central Association",
-                            "sector", "Market Governance",
-                            "trustScore", 10.00,
-                            "isVerifiedBadge", true,
-                            "scoreFrozen", false,
-                            "initial", "A"
-                    ));
+                    data.put("user", createAdminUserMap());
 
                     JsonUtil.writeSuccess(resp, "Admin login successful", data);
                     return;
@@ -290,5 +262,23 @@ public class AuthServlet extends HttpServlet {
         map.put("isVerifiedBadge", t.isVerifiedBadge());
         map.put("createdAt", t.getCreatedAt());
         return map;
+    }
+
+    private Map<String, Object> createAdminUserMap() {
+        Map<String, Object> u = new HashMap<>();
+        u.put("id", "admin-1");
+        u.put("traderId", "admin-1");
+        u.put("name", "Market Association Admin");
+        u.put("username", "Admin");
+        u.put("phone", "Admin");
+        u.put("businessName", "TradeTrust Arbitration Desk");
+        u.put("role", "ADMIN");
+        u.put("cluster", "South Mumbai Central Association");
+        u.put("sector", "Market Governance");
+        u.put("trustScore", 10.00);
+        u.put("isVerifiedBadge", true);
+        u.put("scoreFrozen", false);
+        u.put("initial", "A");
+        return u;
     }
 }

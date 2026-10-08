@@ -22,14 +22,14 @@ export function ToastProvider({ children }) {
 
       setCursorTooltips((prev) => [
         ...prev,
-        { id: tipId, x: clientX, y: clientY, text: 'Coming Soon 🔧' }
+        { id: tipId, x: clientX, y: clientY, text: 'Coming Soon' }
       ]);
 
       setTimeout(() => {
         setCursorTooltips((prev) => prev.filter((t) => t.id !== tipId));
       }, 1800);
     } else {
-      showToast('Coming Soon 🔧');
+      showToast('Coming Soon');
     }
   }, [showToast]);
 

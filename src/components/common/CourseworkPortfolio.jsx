@@ -172,7 +172,7 @@ export function CourseworkPortfolio() {
       <div className="portfolio-header-bar" onClick={() => setIsOpen((prev) => !prev)}>
         <div className="portfolio-header-left">
           <span className="portfolio-header-title">
-            🎓 Academic Portfolio & Evaluation Docket
+            Academic Portfolio & Evaluation Docket
             <span className="portfolio-header-tag">Entrepreneurship Development</span>
           </span>
         </div>
@@ -239,9 +239,9 @@ export function CourseworkPortfolio() {
                         <div className="portfolio-item-title">{item.title}</div>
                         <div className="portfolio-item-meta">
                           {item.fileName ? (
-                            <span style={{ color: 'var(--status-green)' }}>📄 {item.fileName}</span>
+                            <span style={{ color: 'var(--status-green)' }}>{item.fileName}</span>
                           ) : (
-                            <span style={{ color: 'var(--text-muted)' }}>⚠️ No PDF attached yet</span>
+                            <span style={{ color: 'var(--text-muted)' }}>No PDF attached yet</span>
                           )}
                           <span style={{ margin: '0 6px' }}>•</span>
                           <span>{item.date}</span>
@@ -405,7 +405,7 @@ export function CourseworkPortfolio() {
                     </span>
                     {selectedFile && (
                       <span className="modal-file-selected" style={{ marginTop: '6px' }}>
-                        ✓ {selectedFile.name}
+                        Selected: {selectedFile.name}
                       </span>
                     )}
                   </div>

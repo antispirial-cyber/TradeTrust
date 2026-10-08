@@ -3,6 +3,7 @@ package com.tradetrust.dao;
 import com.tradetrust.model.Trader;
 import com.tradetrust.util.DBConnection;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,10 +25,18 @@ public class TraderDAO {
     }
 
     public Trader findByPhone(String phone) throws SQLException {
-        String sql = "SELECT * FROM traders WHERE phone = ?";
+        return findByPhoneOrIdentifier(phone);
+    }
+
+    public Trader findByPhoneOrIdentifier(String input) throws SQLException {
+        if (input == null || input.isBlank()) return null;
+        String sql = "SELECT * FROM traders WHERE phone = ? OR business_name = ? OR name = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, phone);
+            String val = input.trim();
+            ps.setString(1, val);
+            ps.setString(2, val);
+            ps.setString(3, val);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return mapRow(rs);
@@ -153,6 +162,16 @@ public class TraderDAO {
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, traderId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public boolean updateScore(int traderId, BigDecimal newScore) throws SQLException {
+        String sql = "UPDATE traders SET trust_score = ?, score_frozen = FALSE, score_before_freeze = NULL WHERE trader_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBigDecimal(1, newScore);
+            ps.setInt(2, traderId);
             return ps.executeUpdate() > 0;
         }
     }

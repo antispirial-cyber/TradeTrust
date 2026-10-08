@@ -62,9 +62,9 @@ export function NotificationsPage() {
   const handleQuickDemoLogin = async () => {
     setSigningIn(true);
     try {
-      const res = await login({ phone: '9820012345', password: 'password123' });
+      const res = await login({ phone: '9820111111', password: 'tradetrust' });
       if (res.success) {
-        showToast('Signed in as Rajesh Mehta (Seed Account)');
+        showToast('Signed in as Rajpurohit Bangles');
       } else {
         navigate('/login');
       }
@@ -93,7 +93,9 @@ export function NotificationsPage() {
   if (!user) {
     return (
       <div style={{ textAlign: 'center', padding: 'var(--space-2xl) var(--space-xl)', color: 'var(--text-secondary)', maxWidth: '520px', margin: '40px auto', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-md)' }}>
-        <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔔</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px', color: 'var(--accent-blue)' }}>
+          <BellIcon size={32} />
+        </div>
         <h2 style={{ color: 'var(--text-primary)', marginBottom: 'var(--space-sm)' }}>
           Sign In to View Notifications & Alerts
         </h2>
@@ -109,7 +111,7 @@ export function NotificationsPage() {
             onClick={handleQuickDemoLogin}
             disabled={signingIn}
           >
-            {signingIn ? 'Loading Alerts...' : '⚡ Quick Sign-In as Seed Trader (Rajesh Mehta)'}
+            {signingIn ? 'Loading Alerts...' : 'Quick Sign-In as Rajpurohit Bangles'}
           </button>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-sm)' }}>

@@ -52,7 +52,7 @@ public class UploadServlet extends HttpServlet {
             return;
         }
 
-        Path file = Paths.get(UPLOAD_DIR, filename);
+        Path file = Paths.get(UPLOAD_DIR, filename).toAbsolutePath().normalize();
         if (!Files.exists(file) || Files.isDirectory(file)) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found");
             return;
@@ -60,9 +60,19 @@ public class UploadServlet extends HttpServlet {
 
         String mimeType = getServletContext().getMimeType(filename);
         if (mimeType == null) {
-            mimeType = "application/octet-stream";
+            String lower = filename.toLowerCase();
+            if (lower.endsWith(".pdf")) {
+                mimeType = "application/pdf";
+            } else if (lower.endsWith(".png")) {
+                mimeType = "image/png";
+            } else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) {
+                mimeType = "image/jpeg";
+            } else {
+                mimeType = "application/octet-stream";
+            }
         }
         resp.setContentType(mimeType);
+        resp.setHeader("Content-Disposition", "inline; filename=\"" + filename + "\"");
         resp.setContentLengthLong(Files.size(file));
         Files.copy(file, resp.getOutputStream());
     }
@@ -93,7 +103,10 @@ public class UploadServlet extends HttpServlet {
             }
 
             String savedFileName = UUID.randomUUID() + extension;
-            Path target = Paths.get(UPLOAD_DIR, savedFileName);
+            Path target = Paths.get(UPLOAD_DIR, savedFileName).toAbsolutePath().normalize();
+            if (target.getParent() != null && !Files.exists(target.getParent())) {
+                Files.createDirectories(target.getParent());
+            }
 
             try (InputStream in = filePart.getInputStream()) {
                 Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);

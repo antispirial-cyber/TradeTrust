@@ -6,6 +6,7 @@ import { PinIcon } from '../components/common/Icons';
 import { ProfileTab } from '../components/dashboard/ProfileTab';
 import { LedgerTab } from '../components/dashboard/LedgerTab';
 import { PastRecordsTab } from '../components/dashboard/PastRecordsTab';
+import { DisputesTab } from '../components/dashboard/DisputesTab';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import './DashboardPage.css';
@@ -22,10 +23,12 @@ export function DashboardPage() {
 
   const tabParam = searchParams.get('tab');
 
-  // Sync tab with URL query parameter ?tab=ledger
+  // Sync tab with URL query parameter
   useEffect(() => {
     if (tabParam === 'ledger') {
       setActiveTab('ledger');
+    } else if (tabParam === 'disputes') {
+      setActiveTab('disputes');
     } else if (tabParam === 'past-records') {
       setIsPastRecordsUnlocked(true);
       setActiveTab('past-records');
@@ -38,7 +41,7 @@ export function DashboardPage() {
     if (!isPastRecordsUnlocked) {
       setIsPastRecordsUnlocked(true);
       setActiveTab('past-records');
-      showToast('Verified Past Records Unlocked 🔓');
+      showToast('Verified Past Records Unlocked');
     } else {
       setActiveTab('past-records');
     }
@@ -56,9 +59,9 @@ export function DashboardPage() {
   const handleQuickDemoLogin = async () => {
     setSigningIn(true);
     try {
-      const res = await login({ phone: '9820012345', password: 'password123' });
+      const res = await login({ phone: '9820011111', password: 'tradetrust' });
       if (res.success) {
-        showToast('Signed in as Rajesh Mehta (Seed Account)');
+        showToast('Signed in as Rajpurohit Bangles');
       } else {
         navigate('/login');
       }
@@ -73,9 +76,6 @@ export function DashboardPage() {
     const isLedgerRequest = tabParam === 'ledger';
     return (
       <div style={{ textAlign: 'center', padding: 'var(--space-2xl) var(--space-xl)', color: 'var(--text-secondary)', maxWidth: '520px', margin: '40px auto', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-md)' }}>
-        <div style={{ fontSize: '32px', marginBottom: '12px' }}>
-          {isLedgerRequest ? '📒' : '👤'}
-        </div>
         <h2 style={{ color: 'var(--text-primary)', marginBottom: 'var(--space-sm)' }}>
           {isLedgerRequest ? 'Sign In to Access Private Credit Ledger' : 'Sign In to Access Personal Profile'}
         </h2>
@@ -93,7 +93,7 @@ export function DashboardPage() {
             onClick={handleQuickDemoLogin}
             disabled={signingIn}
           >
-            {signingIn ? 'Loading Trader Profile...' : '⚡ Quick Sign-In as Seed Trader (Rajesh Mehta)'}
+            {signingIn ? 'Loading Trader Profile...' : 'Quick Sign-In as Trader (Rajpurohit Bangles)'}
           </button>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-sm)' }}>
@@ -180,6 +180,14 @@ export function DashboardPage() {
           Private Ledger
         </button>
 
+        <button
+          type="button"
+          className={`dashboard-tab-btn ${activeTab === 'disputes' ? 'active' : ''}`}
+          onClick={() => handleTabChange('disputes')}
+        >
+          Disputes
+        </button>
+
         {isPastRecordsUnlocked && (
           <button
             type="button"
@@ -195,6 +203,7 @@ export function DashboardPage() {
       <div className="dashboard-tab-content">
         {activeTab === 'profile' && <ProfileTab trader={user} />}
         {activeTab === 'ledger' && <LedgerTab />}
+        {activeTab === 'disputes' && <DisputesTab />}
         {activeTab === 'past-records' && isPastRecordsUnlocked && (
           <PastRecordsTab traderId={user.id} />
         )}

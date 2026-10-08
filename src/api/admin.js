@@ -88,46 +88,15 @@ function applyDisputeResolutionLocal(complaintId, resolution) {
   const idx = stored.findIndex(c => String(c.id || c.complaintId) === String(complaintId));
   let reportedTraderId = null;
   let reportedName = null;
+  let previousStatus = null;
 
   if (idx >= 0) {
+    previousStatus = stored[idx].status;
     stored[idx].status = resolution;
     stored[idx].verdictDate = new Date().toISOString().split('T')[0];
     reportedTraderId = stored[idx].reportedId || stored[idx].traderId || stored[idx].reportedTraderId;
     reportedName = stored[idx].reportedName;
     localStorage.setItem('tradetrust_complaints', JSON.stringify(stored));
-  } else {
-    // If it's one of INITIAL_ADMIN_COMPLAINTS not yet in localStorage
-    const complaintsRes = INITIAL_TRADERS; // fast reference
-    let allComplaints = [];
-    try {
-      const storedComplaints = JSON.parse(localStorage.getItem('tradetrust_complaints') || '[]');
-      const { INITIAL_ADMIN_COMPLAINTS } = require ? {} : {};
-    } catch {}
-
-    let item = stored.find(c => String(c.id || c.complaintId) === String(complaintId));
-    if (!item) {
-      // Find from initial admin complaints
-      const initialSeed = [
-        { id: 101, complaintId: 101, reportedId: 9, reportedName: 'Crawford Stationery Depot' },
-        { id: 102, complaintId: 102, reportedId: 8, reportedName: 'Lamington Component Hub' },
-        { id: 103, complaintId: 103, reportedId: 7, reportedName: 'Mangaldas Silk House' }
-      ].find(c => String(c.id || c.complaintId) === String(complaintId));
-      if (initialSeed) {
-        item = initialSeed;
-      }
-    }
-
-    if (item) {
-      reportedTraderId = item.reportedId || item.traderId || item.reportedTraderId;
-      reportedName = item.reportedName;
-      const updatedItem = {
-        ...item,
-        status: resolution,
-        verdictDate: new Date().toISOString().split('T')[0]
-      };
-      stored.unshift(updatedItem);
-      localStorage.setItem('tradetrust_complaints', JSON.stringify(stored));
-    }
   }
 
   // If reportedTraderId is still null, try finding trader by reportedName
@@ -146,17 +115,42 @@ function applyDisputeResolutionLocal(complaintId, resolution) {
     }
   }
 
-  // If APPROVED, apply penalty (-1.5) to the reported trader's trust score
+  // Score adjustments based on resolution
   if (resolution === 'APPROVED' && reportedTraderId) {
     adjustTraderScoreLocal(reportedTraderId, -1.5);
+  } else if (resolution === 'RETAKE_APPROVED' && reportedTraderId) {
+    // If complaint was previously approved, restore the 1.50 point deduction
+    if (previousStatus === 'APPROVED') {
+      adjustTraderScoreLocal(reportedTraderId, +1.5);
+    }
+    // Always unfreeze reported trader's score upon retake approval
+    updateTraderFieldLocal(reportedTraderId, {
+      scoreFrozen: false,
+      isScoreFrozen: false
+    });
+  } else if (resolution === 'REJECTED' && reportedTraderId) {
+    // Unfreeze on dismissal
+    updateTraderFieldLocal(reportedTraderId, {
+      scoreFrozen: false,
+      isScoreFrozen: false
+    });
   }
 
   // Emit association verdict notification
   emitVerdictNotification(complaintId, resolution);
 
+  let msg = `Dispute #${complaintId} has been resolved as ${resolution}.`;
+  if (resolution === 'APPROVED') {
+    msg = `Dispute #${complaintId} approved. Score penalty (-1.50) applied.`;
+  } else if (resolution === 'RETAKE_APPROVED') {
+    msg = `Retake approved for Dispute #${complaintId}. Complaint withdrawn and penalties restored.`;
+  } else if (resolution === 'REJECTED') {
+    msg = `Dispute #${complaintId} dismissed without penalty.`;
+  }
+
   return {
     success: true,
-    message: `Dispute #${complaintId} has been ${resolution === 'APPROVED' ? 'approved (penalty applied: -1.50)' : 'dismissed'}.`
+    message: msg
   };
 }
 
@@ -195,9 +189,21 @@ export async function toggleTraderVerified(traderId, isVerified) {
 
 export async function setTraderCustomScore(traderId, newScore) {
   const score = Math.max(0, Math.min(10, parseFloat(newScore) || 0));
+  try {
+    await apiClient(`/api/admin/trader/${traderId}/score`, {
+      method: 'POST',
+      body: { score }
+    });
+  } catch (err) {
+    console.warn('[TradeTrust] Backend score adjust error:', err);
+  }
+
   updateTraderFieldLocal(traderId, {
-    trustScore: score
+    trustScore: score,
+    scoreFrozen: false,
+    isScoreFrozen: false
   });
+
   return {
     success: true,
     data: score,

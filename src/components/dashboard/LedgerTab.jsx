@@ -76,7 +76,7 @@ export function LedgerTab() {
 
       <div className="ledger-actions-bar">
         <span className="ledger-privacy-note">
-          🔒 Private ledger. Visible only to your account.
+          Private ledger. Visible only to your account.
         </span>
         <button
           type="button"

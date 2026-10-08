@@ -102,7 +102,7 @@ export function ProfileTab({ trader, onUpdateSuccess }) {
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
                   >
-                    {uploading ? 'Processing...' : '📷 Change Photo'}
+                    {uploading ? 'Processing...' : 'Change Photo'}
                   </button>
                   {photoUrl && (
                     <button

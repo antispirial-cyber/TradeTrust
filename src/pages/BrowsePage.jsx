@@ -88,7 +88,7 @@ export function BrowsePage() {
           color: 'var(--text-secondary)'
         }}>
           <div>
-            🏛️ <strong style={{ color: 'var(--text-primary)' }}>Are you a Mumbai Bazaar Trader?</strong> Public browsing is free. Register your business to start building your verified Trust Score.
+            <strong style={{ color: 'var(--text-primary)' }}>Are you a Mumbai Bazaar Trader?</strong> Public browsing is free. Register your business to start building your verified Trust Score.
           </div>
           <Link
             to="/register"

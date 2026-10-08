@@ -4,6 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { PRESET_ACCENT_COLORS } from '../api/settings';
 import { processImageUpload } from '../utils/imageUpload';
+import { SunIcon, MoonIcon } from '../components/common/Icons';
 import './SettingsPage.css';
 
 export function SettingsPage() {
@@ -158,7 +159,7 @@ export function SettingsPage() {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingPhoto}
               >
-                {uploadingPhoto ? 'Processing...' : '📷 Upload Custom Photo'}
+                {uploadingPhoto ? 'Processing...' : 'Upload Custom Photo'}
               </button>
               {photoUrl && (
                 <button
@@ -272,12 +273,12 @@ export function SettingsPage() {
               className={`theme-mode-card-btn ${selectedTheme === 'dark' ? 'selected' : ''}`}
               onClick={() => handleThemeSelect('dark')}
             >
-              <div className="theme-mode-card-icon">🌙</div>
+              <div className="theme-mode-card-icon"><MoonIcon size={20} /></div>
               <div className="theme-mode-card-info">
                 <span className="theme-mode-card-title">Dark Obsidian</span>
                 <span className="theme-mode-card-desc">Bazaar trading night palette with deep navy cards</span>
               </div>
-              {selectedTheme === 'dark' && <span className="theme-mode-active-indicator">✓ Active</span>}
+              {selectedTheme === 'dark' && <span className="theme-mode-active-indicator">Active</span>}
             </button>
 
             <button
@@ -285,12 +286,12 @@ export function SettingsPage() {
               className={`theme-mode-card-btn ${selectedTheme === 'light' ? 'selected' : ''}`}
               onClick={() => handleThemeSelect('light')}
             >
-              <div className="theme-mode-card-icon">☀️</div>
+              <div className="theme-mode-card-icon"><SunIcon size={20} /></div>
               <div className="theme-mode-card-info">
                 <span className="theme-mode-card-title">Light Slate</span>
                 <span className="theme-mode-card-desc">High-contrast 2-tone canvas with crisp card boundaries</span>
               </div>
-              {selectedTheme === 'light' && <span className="theme-mode-active-indicator">✓ Active</span>}
+              {selectedTheme === 'light' && <span className="theme-mode-active-indicator">Active</span>}
             </button>
           </div>
         </div>

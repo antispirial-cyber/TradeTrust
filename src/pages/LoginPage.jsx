@@ -39,9 +39,9 @@ export function LoginPage({ initialTab }) {
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
 
-  // Login form state (pre-filled with seed account for instant evaluation)
-  const [phone, setPhone] = useState('9820012345');
-  const [password, setPassword] = useState('password123');
+  // Login form state (defaulted to official account for presentation)
+  const [phone, setPhone] = useState('9820011111');
+  const [password, setPassword] = useState('tradetrust');
 
   // Register form state
   const [regName, setRegName] = useState('');
@@ -73,7 +73,7 @@ export function LoginPage({ initialTab }) {
           showToast('Welcome, Market Association Administrator!');
           navigate('/admin');
         } else {
-          showToast('Welcome back, ' + (res.data.name || 'Trader') + '!');
+          showToast('Welcome back, ' + (res.data.name || res.data.businessName || 'Trader') + '!');
           navigate('/dashboard');
         }
       } else {
@@ -113,15 +113,20 @@ export function LoginPage({ initialTab }) {
     }
   };
 
-  const handleDemoLogin = async () => {
+  const handleQuickLogin = async (targetPhone, targetPass) => {
     setLoading(true);
     try {
-      const res = await login({ phone: '9820012345', password: 'password123' });
+      const res = await login({ phone: targetPhone, password: targetPass });
       if (res.success) {
-        showToast('Signed in as Rajesh Mehta (Seed Account)');
-        navigate('/dashboard');
+        if (res.data?.role === 'ADMIN') {
+          showToast('Welcome, Market Association Administrator!');
+          navigate('/admin');
+        } else {
+          showToast('Welcome back, ' + (res.data.businessName || res.data.name || 'Trader') + '!');
+          navigate('/dashboard');
+        }
       } else {
-        alert(res.message || 'Demo login failed');
+        alert(res.message || 'Quick login failed');
       }
     } catch (err) {
       alert('Error: ' + err.message);
@@ -131,9 +136,9 @@ export function LoginPage({ initialTab }) {
   };
 
   const getPromptMessage = () => {
-    if (promptFromQuery === 'ledger') return '🔒 Please sign in to access your Private Credit Ledger.';
-    if (promptFromQuery === 'notifications') return '🔔 Please sign in to view your Market Alerts & Notifications.';
-    if (promptFromQuery === 'profile') return '👤 Please sign in to access your Personal Trader Profile.';
+    if (promptFromQuery === 'ledger') return 'Please sign in to access your Private Credit Ledger.';
+    if (promptFromQuery === 'notifications') return 'Please sign in to view your Market Alerts & Notifications.';
+    if (promptFromQuery === 'profile') return 'Please sign in to access your Personal Trader Profile.';
     return null;
   };
 
@@ -142,7 +147,7 @@ export function LoginPage({ initialTab }) {
       <div className="login-card">
         <div className="login-logo-container">
           <img src="/logo.png" alt="TradeTrust" className="login-logo-img" />
-          <p className="login-tagline">Know who you're trading with.</p>
+          <p className="login-tagline">Know who you are trading with.</p>
         </div>
 
         {getPromptMessage() && (
@@ -161,16 +166,49 @@ export function LoginPage({ initialTab }) {
           </div>
         )}
 
+        {/* Quick Accounts Evaluation Strip */}
         <div style={{ marginBottom: 'var(--space-md)' }}>
-          <button
-            type="button"
-            className="modal-btn-primary"
-            style={{ width: '100%', padding: '10px 14px', background: 'var(--accent-blue)', color: '#fff', borderRadius: 'var(--radius-md)' }}
-            onClick={handleDemoLogin}
-            disabled={loading}
-          >
-            ⚡ 1-Click Demo Login (Rajesh Mehta)
-          </button>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px', textAlign: 'center', fontWeight: 600 }}>
+            Quick Demo Accounts (Password: tradetrust):
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+            <button
+              type="button"
+              className="modal-btn-secondary"
+              style={{ fontSize: '11px', padding: '6px 8px', textAlign: 'center' }}
+              onClick={() => handleQuickLogin('9820011111', 'tradetrust')}
+              disabled={loading}
+            >
+              Rajpurohit Bangles
+            </button>
+            <button
+              type="button"
+              className="modal-btn-secondary"
+              style={{ fontSize: '11px', padding: '6px 8px', textAlign: 'center' }}
+              onClick={() => handleQuickLogin('9820022222', 'tradetrust')}
+              disabled={loading}
+            >
+              Sharma Electronics
+            </button>
+            <button
+              type="button"
+              className="modal-btn-secondary"
+              style={{ fontSize: '11px', padding: '6px 8px', textAlign: 'center' }}
+              onClick={() => handleQuickLogin('9820033333', 'tradetrust')}
+              disabled={loading}
+            >
+              Seliya Stationary
+            </button>
+            <button
+              type="button"
+              className="modal-btn-secondary"
+              style={{ fontSize: '11px', padding: '6px 8px', textAlign: 'center' }}
+              onClick={() => handleQuickLogin('9820044444', 'tradetrust')}
+              disabled={loading}
+            >
+              Sankhe Jwells
+            </button>
+          </div>
         </div>
 
         <div className="login-tabs">
@@ -193,10 +231,10 @@ export function LoginPage({ initialTab }) {
         {activeTab === 'login' ? (
           <form className="login-form" onSubmit={handleLoginSubmit}>
             <div className="form-group">
-              <label className="form-label">Phone Number or Username</label>
+              <label className="form-label">Phone Number or Trader Card Name</label>
               <input
                 type="text"
-                placeholder="10-digit mobile number or 'Admin'"
+                placeholder="10-digit mobile, Trader Card, or 'Admin'"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 required
@@ -207,7 +245,7 @@ export function LoginPage({ initialTab }) {
               <label className="form-label">Password</label>
               <input
                 type="password"
-                placeholder="Account password"
+                placeholder="Account password (tradetrust)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -345,7 +383,7 @@ export function LoginPage({ initialTab }) {
             onClick={() => setIsAdminModalOpen(true)}
             title="Access Market Association Administrator Desk"
           >
-            🏛️ Market Association Arbitration Desk (Admin)
+            Market Association Arbitration Desk (Admin)
           </span>
         </div>
       </div>
@@ -356,3 +394,5 @@ export function LoginPage({ initialTab }) {
     </div>
   );
 }
+
+export default LoginPage;

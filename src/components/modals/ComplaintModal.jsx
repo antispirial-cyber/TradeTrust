@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { CloseIcon, CheckIcon, UploadCloudIcon } from '../common/Icons';
 import { fileComplaint } from '../../api/complaints';
+import { uploadEvidenceFile } from '../../utils/fileUpload';
 import { useToast } from '../../context/ToastContext';
 import './ComplaintModal.css';
 
@@ -40,6 +41,11 @@ export function ComplaintModal({ reportedTrader, onClose, onSubmitSuccess }) {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      let uploadedPath = null;
+      if (selectedFile) {
+        uploadedPath = await uploadEvidenceFile(selectedFile);
+      }
+
       const res = await fileComplaint({
         reportedId: reportedTrader.id || reportedTrader.traderId,
         reportedName: reportedTrader.businessName || reportedTrader.name,
@@ -47,7 +53,8 @@ export function ComplaintModal({ reportedTrader, onClose, onSubmitSuccess }) {
         description,
         amountDisputed,
         incidentDate,
-        proofFileName: selectedFile ? selectedFile.name : null
+        proofFileName: selectedFile ? selectedFile.name : null,
+        proofPath: uploadedPath || (selectedFile ? selectedFile.name : null)
       });
       if (res.success) {
         setIsSubmitted(true);
@@ -77,11 +84,11 @@ export function ComplaintModal({ reportedTrader, onClose, onSubmitSuccess }) {
         {!isSubmitted && (
           <div className="modal-steps">
             <div className={`modal-step-item ${step === 1 ? 'active' : ''} ${step > 1 ? 'completed' : ''}`}>
-              <div className="modal-step-circle">{step > 1 ? '✓' : '1'}</div>
+              <div className="modal-step-circle">{step > 1 ? <CheckIcon size={12} /> : '1'}</div>
               <span>Details</span>
             </div>
             <div className={`modal-step-item ${step === 2 ? 'active' : ''} ${step > 2 ? 'completed' : ''}`}>
-              <div className="modal-step-circle">{step > 2 ? '✓' : '2'}</div>
+              <div className="modal-step-circle">{step > 2 ? <CheckIcon size={12} /> : '2'}</div>
               <span>Evidence</span>
             </div>
             <div className={`modal-step-item ${step === 3 ? 'active' : ''}`}>
@@ -161,7 +168,9 @@ export function ComplaintModal({ reportedTrader, onClose, onSubmitSuccess }) {
                       Drag and drop trade challan, invoice copy, or WhatsApp ledger record
                     </span>
                     {selectedFile && (
-                      <span className="modal-file-selected">✓ {selectedFile.name}</span>
+                      <span className="modal-file-selected" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <CheckIcon size={14} /> {selectedFile.name}
+                      </span>
                     )}
                   </div>
                 </div>
