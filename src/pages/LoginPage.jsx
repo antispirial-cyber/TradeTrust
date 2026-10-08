@@ -135,7 +135,7 @@ export function LoginPage({ initialTab }) {
             borderRadius: 'var(--radius-md)',
             padding: '8px 12px',
             fontSize: 'var(--text-xs)',
-            color: 'var(--accent-blue)',
+            color: 'var(--accent-color)',
             fontWeight: 600,
             marginBottom: 'var(--space-md)',
             textAlign: 'center'

@@ -390,3 +390,11 @@ Be ready to explain the following during the presentation:
 5. **Build Verification:**
    - Frontend compiled successfully with `vite build` into `dist/` with zero errors.
    - Backend compiled successfully with `mvn clean compile` across all 34 Java source files.
+
+6. **Systematic Theme and Layout Button Fixes (Collective Pass):**
+   - **Root Cause Resolution for Disappearing Buttons:** Defined the missing `--accent-blue: #1E6FFB;` CSS token in `src/styles/variables.css` across both Dark Obsidian (`:root, [data-theme="dark"]`) and Light Slate (`[data-theme="light"]`) modes, ensuring all buttons, tags, and icons resolve solid background and text colors instead of falling back to transparent.
+   - **Dynamic Token Synchronization:** Updated `applyColorToRoot()` in `src/context/ThemeContext.jsx` to synchronize `--accent-blue` dynamically alongside `--accent-color`.
+   - **High-Contrast Text on Accent Buttons:** Updated `.modal-btn-primary`, `.connect-btn.not-connected`, `.login-submit-btn`, `.browse-search-btn`, `.ledger-add-btn`, `.navbar-register-btn`, and `.sidebar-register-btn` to use explicit high-contrast white text (`color: #ffffff;`) instead of inherited dark `--text-primary` on blue backgrounds in Light Slate mode.
+   - **Sidebar Footer Layout & Overlap Fix:** Refactored `.sidebar-footer` in `Sidebar.css` from a single crowded horizontal row into a clean vertical column layout (`flex-direction: column; width: 100%; gap: var(--space-sm);`). Auth buttons now occupy a full-width grid (`.sidebar-auth-grid`, 50/50 split), and "Terms • Contact" sits cleanly underneath in `.sidebar-links-row`, eliminating button squishing, vertical text wrapping, and visual collision.
+   - **Clean Semantic CSS Classes:** Replaced fragile inline button styles in `Navbar.jsx`, `Sidebar.jsx`, `BrowsePage.jsx`, `DashboardPage.jsx`, `NotificationsPage.jsx`, and `AdminPage.jsx` with dedicated classes (`.navbar-login-btn`, `.navbar-register-btn`, `.sidebar-login-btn`, `.sidebar-register-btn`).
+   - **Modal Layout Polish:** Added consistent `24px` padding to the score adjustment modal card in `AdminPage.jsx` for clean visual spacing.

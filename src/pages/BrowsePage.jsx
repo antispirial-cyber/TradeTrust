@@ -93,8 +93,9 @@ export function BrowsePage() {
           <Link
             to="/register"
             style={{
-              background: 'var(--accent-blue)',
-              color: '#fff',
+              backgroundColor: 'var(--accent-color)',
+              color: '#ffffff',
+              border: '1px solid var(--accent-color)',
               padding: '6px 14px',
               borderRadius: 'var(--radius-sm)',
               fontWeight: 600,

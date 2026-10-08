@@ -14,7 +14,7 @@ export function TermsModal({ onClose }) {
         </div>
 
         <div className="modal-body" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
-          <div style={{ display: 'inline-block', padding: '4px 10px', background: 'rgba(30, 111, 251, 0.1)', color: 'var(--accent-blue)', borderRadius: 'var(--radius-sm)', fontSize: 'var(--text-xs)', fontWeight: 600, marginBottom: 'var(--space-md)' }}>
+          <div style={{ display: 'inline-block', padding: '4px 10px', background: 'rgba(30, 111, 251, 0.1)', color: 'var(--accent-color)', borderRadius: 'var(--radius-sm)', fontSize: 'var(--text-xs)', fontWeight: 600, marginBottom: 'var(--space-md)' }}>
             Status: Draft / Under Review by Mumbai Bazaar Associations
           </div>
 

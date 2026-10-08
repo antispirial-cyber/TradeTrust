@@ -181,7 +181,7 @@ export function AdminPage() {
       <div className="admin-gate-container">
         <div className="admin-gate-card">
           <div className="admin-gate-icon">
-            <ShieldIcon size={44} color="var(--accent-blue)" />
+            <ShieldIcon size={44} color="var(--accent-color)" />
           </div>
           <h2 className="admin-gate-title">Market Association Arbitration Desk</h2>
           <p className="admin-gate-subtitle">
@@ -460,7 +460,7 @@ export function AdminPage() {
                                 href={c.proofPath}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                style={{ color: 'var(--accent-blue)', textDecoration: 'underline', fontWeight: 600 }}
+                                style={{ color: 'var(--accent-color)', textDecoration: 'underline', fontWeight: 600 }}
                               >
                                 [View Attached File]
                               </a>
@@ -803,7 +803,7 @@ export function AdminPage() {
       {/* Score Adjustment Modal */}
       {adjustingTrader && (
         <div className="modal-overlay" onClick={() => setAdjustingTrader(null)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px' }}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px', padding: '24px' }}>
             <h3 className="modal-title">Adjust Trust Score</h3>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
               Override reputation score for <strong>{adjustingTrader.businessName}</strong>.

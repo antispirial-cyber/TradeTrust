@@ -39,7 +39,7 @@
   align-items: center;
   gap: 6px;
   background: rgba(30, 111, 251, 0.15);
-  color: var(--accent-blue);
+  color: var(--accent-color);
   border: 1px solid rgba(30, 111, 251, 0.3);
   padding: 4px 10px;
   border-radius: 999px;
@@ -99,7 +99,7 @@
 .admin-avatar-small {
   width: 32px;
   height: 32px;
-  background: var(--accent-blue);
+  background: var(--accent-color);
   color: #ffffff;
   border-radius: 50%;
   display: flex;
@@ -139,8 +139,8 @@
 }
 
 .admin-secondary-btn:hover {
-  border-color: var(--accent-blue);
-  color: var(--accent-blue);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 .admin-logout-btn {
@@ -254,8 +254,8 @@
 }
 
 .admin-tab-btn.active {
-  color: var(--accent-blue);
-  border-bottom-color: var(--accent-blue);
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
 }
 
 /* Panel Card */
@@ -314,7 +314,7 @@
 }
 
 .filter-pill-btn.active {
-  background: var(--accent-blue);
+  background: var(--accent-color);
   color: #ffffff;
 }
 
@@ -373,7 +373,7 @@
 .cluster-tag {
   display: inline-block;
   background: rgba(30, 111, 251, 0.1);
-  color: var(--accent-blue);
+  color: var(--accent-color);
   border: 1px solid rgba(30, 111, 251, 0.2);
   padding: 2px 6px;
   border-radius: 4px;
@@ -684,7 +684,7 @@
   border-radius: 4px;
   background: transparent;
   border: 1px solid var(--border-subtle);
-  color: var(--accent-blue);
+  color: var(--accent-color);
   cursor: pointer;
 }
 
@@ -735,12 +735,12 @@
   padding: 2px 8px;
   border-radius: 4px;
   font-weight: 700;
-  color: var(--accent-blue);
+  color: var(--accent-color);
 }
 
 .role-chip {
   background: rgba(30, 111, 251, 0.15);
-  color: var(--accent-blue);
+  color: var(--accent-color);
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 11px;
@@ -793,7 +793,7 @@
 }
 
 .admin-gate-btn {
-  background: var(--accent-blue);
+  background: var(--accent-color);
   color: #ffffff;
   border: none;
   padding: 10px 16px;

@@ -85,7 +85,7 @@ export function Sidebar({ unreadCount = 0 }) {
               style={{
                 marginTop: '8px',
                 background: 'rgba(30, 111, 251, 0.12)',
-                color: 'var(--accent-blue)',
+                color: 'var(--accent-color)',
                 fontWeight: 600
               }}
             >
@@ -98,7 +98,7 @@ export function Sidebar({ unreadCount = 0 }) {
 
       <div className="sidebar-footer">
         {user ? (
-          <>
+          <div className="sidebar-user-row">
             <div className="sidebar-user" onClick={() => navigate(user.role === 'ADMIN' ? '/admin' : '/dashboard')} style={{ cursor: 'pointer' }}>
               <div className="sidebar-avatar">
                 {user.photoUrl ? (
@@ -121,31 +121,27 @@ export function Sidebar({ unreadCount = 0 }) {
             >
               <LogOutIcon size={18} />
             </button>
-          </>
+          </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-              <button
-                type="button"
-                className="sidebar-login-btn"
-                style={{ padding: '8px 4px', fontSize: 'var(--text-xs)' }}
-                onClick={() => navigate('/login')}
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                className="sidebar-login-btn"
-                style={{ padding: '8px 4px', fontSize: 'var(--text-xs)', background: 'var(--accent-blue)', color: '#fff', border: 'none' }}
-                onClick={() => navigate('/register')}
-              >
-                Register
-              </button>
-            </div>
+          <div className="sidebar-auth-grid">
+            <button
+              type="button"
+              className="sidebar-login-btn"
+              onClick={() => navigate('/login')}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              className="sidebar-register-btn"
+              onClick={() => navigate('/register')}
+            >
+              Register
+            </button>
           </div>
         )}
 
-        <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'center', gap: '10px', fontSize: '11px', color: 'var(--text-muted)' }}>
+        <div className="sidebar-links-row">
           <span style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setIsTermsOpen(true)}>
             Terms
           </span>

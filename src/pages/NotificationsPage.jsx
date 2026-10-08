@@ -76,7 +76,7 @@ export function NotificationsPage() {
   if (!user) {
     return (
       <div style={{ textAlign: 'center', padding: 'var(--space-2xl) var(--space-xl)', color: 'var(--text-secondary)', maxWidth: '520px', margin: '40px auto', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-md)' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px', color: 'var(--accent-blue)' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px', color: 'var(--accent-color)' }}>
           <BellIcon size={32} />
         </div>
         <h2 style={{ color: 'var(--text-primary)', marginBottom: 'var(--space-sm)' }}>
@@ -98,7 +98,7 @@ export function NotificationsPage() {
           <button
             type="button"
             className="modal-btn-secondary"
-            style={{ width: '100%', padding: '10px 14px', borderColor: 'var(--accent-blue)', color: 'var(--accent-blue)' }}
+            style={{ width: '100%', padding: '10px 14px', borderColor: 'var(--accent-color)', color: 'var(--accent-color)' }}
             onClick={() => navigate('/register')}
           >
             Register Business

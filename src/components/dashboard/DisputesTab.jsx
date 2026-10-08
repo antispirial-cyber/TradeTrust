@@ -105,7 +105,7 @@ export function DisputesTab() {
                   <div className="past-record-top">
                     <span className="past-record-status" style={{
                       background: isRetakeRequested ? 'rgba(239, 68, 68, 0.15)' : 'rgba(30, 111, 251, 0.12)',
-                      color: isRetakeRequested ? '#EF4444' : 'var(--accent-blue)'
+                      color: isRetakeRequested ? '#EF4444' : 'var(--accent-color)'
                     }}>
                       Case #{c.id || c.complaintId} • Status: {c.status.replace(/_/g, ' ')}
                     </span>
@@ -129,7 +129,7 @@ export function DisputesTab() {
                           href={c.proofPath}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{ color: 'var(--accent-blue)', textDecoration: 'underline', marginRight: '12px' }}
+                          style={{ color: 'var(--accent-color)', textDecoration: 'underline', marginRight: '12px' }}
                         >
                           [View Attached File]
                         </a>

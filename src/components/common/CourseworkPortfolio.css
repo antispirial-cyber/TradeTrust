@@ -35,7 +35,7 @@
 
 .portfolio-header-tag {
   font-size: 11px;
-  background: var(--accent-blue);
+  background: var(--accent-color);
   color: #fff;
   padding: 2px 8px;
   border-radius: 12px;
@@ -52,7 +52,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--accent-blue);
+  background: var(--accent-color);
   color: #fff;
   border: none;
   padding: 6px 12px;
@@ -142,7 +142,7 @@
 
 .portfolio-badge.experiment {
   background: rgba(30, 111, 251, 0.12);
-  color: var(--accent-blue);
+  color: var(--accent-color);
   border: 1px solid rgba(30, 111, 251, 0.25);
 }
 
@@ -172,7 +172,7 @@
 .portfolio-view-btn {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  color: var(--accent-blue);
+  color: var(--accent-color);
   padding: 5px 12px;
   font-size: var(--text-xs);
   font-weight: 600;
@@ -182,9 +182,9 @@
 }
 
 .portfolio-view-btn.active {
-  background: var(--accent-blue);
+  background: var(--accent-color);
   color: #fff;
-  border-color: var(--accent-blue);
+  border-color: var(--accent-color);
 }
 
 .portfolio-icon-btn {

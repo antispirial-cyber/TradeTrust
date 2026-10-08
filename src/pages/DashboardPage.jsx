@@ -80,7 +80,7 @@ export function DashboardPage() {
           <button
             type="button"
             className="modal-btn-secondary"
-            style={{ width: '100%', padding: '10px 14px', borderColor: 'var(--accent-blue)', color: 'var(--accent-blue)' }}
+            style={{ width: '100%', padding: '10px 14px', borderColor: 'var(--accent-color)', color: 'var(--accent-color)' }}
             onClick={() => navigate('/register')}
           >
             Register Business

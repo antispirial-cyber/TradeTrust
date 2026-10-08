@@ -103,6 +103,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .public-profile-report-btn:hover {

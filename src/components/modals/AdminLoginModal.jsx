@@ -38,7 +38,7 @@ export function AdminLoginModal({ onClose }) {
       <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
         <div className="modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <ShieldIcon size={20} color="var(--accent-blue)" />
+            <ShieldIcon size={20} color="var(--accent-color)" />
             <h3 className="modal-title">Market Association Desk</h3>
           </div>
           <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close modal">

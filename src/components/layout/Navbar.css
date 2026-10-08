@@ -32,15 +32,38 @@
   padding: 6px var(--space-md);
   border: 1px solid var(--border-color);
   border-radius: var(--button-radius);
+  background-color: transparent;
   color: var(--text-primary);
   font-size: var(--text-sm);
   font-weight: 500;
   transition: all var(--transition-fast);
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 .navbar-login-btn:hover {
   border-color: var(--accent-color);
   color: var(--accent-color);
+  background-color: var(--accent-muted);
+}
+
+.navbar-register-btn {
+  padding: 6px var(--space-md);
+  border: 1px solid var(--accent-color);
+  border-radius: var(--button-radius);
+  background-color: var(--accent-color);
+  color: #ffffff;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.navbar-register-btn:hover {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: #ffffff;
 }
 
 .navbar-icon-btn {

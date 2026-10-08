@@ -41,7 +41,7 @@
 
 .browse-search-btn {
   background-color: var(--accent-color);
-  color: var(--text-primary);
+  color: #ffffff;
   font-weight: 600;
   font-size: var(--text-sm);
   padding: 0 var(--space-lg);

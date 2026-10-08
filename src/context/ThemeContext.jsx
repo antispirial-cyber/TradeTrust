@@ -16,6 +16,7 @@ export function ThemeProvider({ children }) {
   const applyColorToRoot = (hex) => {
     if (!hex || !/^#[0-9A-Fa-f]{6}$/.test(hex)) return;
     document.documentElement.style.setProperty('--accent-color', hex);
+    document.documentElement.style.setProperty('--accent-blue', hex);
     // calculate muted with 20% alpha
     document.documentElement.style.setProperty('--accent-muted', `${hex}26`);
     document.documentElement.style.setProperty('--accent-hover', `${hex}dd`);

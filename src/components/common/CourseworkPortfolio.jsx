@@ -275,7 +275,7 @@ export function CourseworkPortfolio() {
                           type="button"
                           className="portfolio-view-btn"
                           onClick={() => handleOpenReplace(item.id)}
-                          style={{ borderColor: 'var(--accent-blue)' }}
+                          style={{ borderColor: 'var(--accent-color)' }}
                         >
                           + Attach PDF
                         </button>

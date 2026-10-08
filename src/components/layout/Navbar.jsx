@@ -60,15 +60,13 @@ export function Navbar({ unreadCount = 0 }) {
             <button
               type="button"
               className="navbar-login-btn"
-              style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
               onClick={() => navigate('/login')}
             >
               Sign In
             </button>
             <button
               type="button"
-              className="navbar-login-btn"
-              style={{ background: 'var(--accent-blue)', color: '#fff', border: 'none' }}
+              className="navbar-register-btn"
               onClick={() => navigate('/register')}
             >
               Register

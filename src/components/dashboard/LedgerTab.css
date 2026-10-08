@@ -58,7 +58,7 @@
   align-items: center;
   gap: var(--space-xs);
   background-color: var(--accent-color);
-  color: var(--text-primary);
+  color: #ffffff;
   padding: 8px var(--space-md);
   border-radius: var(--button-radius);
   font-size: var(--text-sm);
