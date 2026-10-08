@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { TermsModal } from '../components/modals/TermsModal';
 import { ContactModal } from '../components/modals/ContactModal';
+import { AdminLoginModal } from '../components/modals/AdminLoginModal';
 import './LoginPage.css';
 
 const CLUSTERS = [
@@ -36,6 +37,7 @@ export function LoginPage({ initialTab }) {
   // Modals
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
 
   // Login form state (pre-filled with seed account for instant evaluation)
   const [phone, setPhone] = useState('9820012345');
@@ -67,8 +69,13 @@ export function LoginPage({ initialTab }) {
     try {
       const res = await login({ phone, password });
       if (res.success) {
-        showToast('Welcome back, ' + (res.data.name || 'Trader') + '!');
-        navigate('/dashboard');
+        if (res.data?.role === 'ADMIN') {
+          showToast('Welcome, Market Association Administrator!');
+          navigate('/admin');
+        } else {
+          showToast('Welcome back, ' + (res.data.name || 'Trader') + '!');
+          navigate('/dashboard');
+        }
       } else {
         alert(res.message || 'Login failed. Please check credentials.');
       }
@@ -186,10 +193,10 @@ export function LoginPage({ initialTab }) {
         {activeTab === 'login' ? (
           <form className="login-form" onSubmit={handleLoginSubmit}>
             <div className="form-group">
-              <label className="form-label">Phone Number</label>
+              <label className="form-label">Phone Number or Username</label>
               <input
-                type="tel"
-                placeholder="10-digit mobile number"
+                type="text"
+                placeholder="10-digit mobile number or 'Admin'"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 required
@@ -334,8 +341,9 @@ export function LoginPage({ initialTab }) {
           </div>
           <span
             className="admin-access-link"
-            style={{ fontSize: '11px', color: 'var(--text-muted)' }}
-            onClick={() => showToast('Market Association Arbitration Panel: disputes escalated by merchants are reviewed by authorized officials.')}
+            style={{ fontSize: '11px', color: 'var(--text-muted)', cursor: 'pointer' }}
+            onClick={() => setIsAdminModalOpen(true)}
+            title="Access Market Association Administrator Desk"
           >
             🏛️ Market Association Arbitration Desk (Admin)
           </span>
@@ -344,6 +352,7 @@ export function LoginPage({ initialTab }) {
 
       {isTermsOpen && <TermsModal onClose={() => setIsTermsOpen(false)} />}
       {isContactOpen && <ContactModal onClose={() => setIsContactOpen(false)} />}
+      {isAdminModalOpen && <AdminLoginModal onClose={() => setIsAdminModalOpen(false)} />}
     </div>
   );
 }

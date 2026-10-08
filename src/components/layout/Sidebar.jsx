@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { SearchIcon, UserIcon, LedgerIcon, BellIcon, SettingsIcon, LogOutIcon } from '../common/Icons';
+import { SearchIcon, UserIcon, LedgerIcon, BellIcon, SettingsIcon, LogOutIcon, ShieldIcon } from '../common/Icons';
 import { useAuth } from '../../context/AuthContext';
 import { TermsModal } from '../modals/TermsModal';
 import { ContactModal } from '../modals/ContactModal';
@@ -77,13 +77,29 @@ export function Sidebar({ unreadCount = 0 }) {
             <SettingsIcon size={20} />
             <span>Settings</span>
           </NavLink>
+
+          {user && user.role === 'ADMIN' && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              style={{
+                marginTop: '8px',
+                background: 'rgba(30, 111, 251, 0.12)',
+                color: 'var(--accent-blue)',
+                fontWeight: 600
+              }}
+            >
+              <ShieldIcon size={20} />
+              <span>Arbitration Desk</span>
+            </NavLink>
+          )}
         </nav>
       </div>
 
       <div className="sidebar-footer">
         {user ? (
           <>
-            <div className="sidebar-user" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
+            <div className="sidebar-user" onClick={() => navigate(user.role === 'ADMIN' ? '/admin' : '/dashboard')} style={{ cursor: 'pointer' }}>
               <div className="sidebar-avatar">
                 {user.photoUrl ? (
                   <img src={user.photoUrl} alt={user.businessName || user.name} className="sidebar-avatar-img" />

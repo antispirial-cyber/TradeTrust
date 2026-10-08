@@ -125,6 +125,39 @@ public class AuthServlet extends HttpServlet {
                 return;
             }
 
+            // Universal Admin check from standard login form
+            if ("admin".equalsIgnoreCase(phone.trim())) {
+                if ("tradetrust".equals(rawPassword.trim())) {
+                    HttpSession session = req.getSession(true);
+                    session.setAttribute("admin_id", 1);
+                    session.setAttribute("role", "ADMIN");
+                    String token = SessionUtil.createToken(1, "ADMIN");
+
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("token", token);
+                    data.put("user", Map.of(
+                            "id", "admin-1",
+                            "traderId", "admin-1",
+                            "name", "Market Association Admin",
+                            "username", "Admin",
+                            "phone", "Admin",
+                            "businessName", "TradeTrust Arbitration Desk",
+                            "role", "ADMIN",
+                            "cluster", "South Mumbai Central Association",
+                            "sector", "Market Governance",
+                            "trustScore", 10.00,
+                            "isVerifiedBadge", true,
+                            "scoreFrozen", false,
+                            "initial", "A"
+                    ));
+                    JsonUtil.writeSuccess(resp, "Admin login successful", data);
+                    return;
+                } else {
+                    JsonUtil.writeError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Invalid admin password. Active password is 'tradetrust'. All previous admin accounts have been removed.");
+                    return;
+                }
+            }
+
             Trader trader = traderDAO.findByPhone(phone);
             if (trader == null || !PasswordUtil.verify(rawPassword, trader.getPasswordHash())) {
                 JsonUtil.writeError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Invalid phone number or password");
@@ -158,26 +191,46 @@ public class AuthServlet extends HttpServlet {
                 return;
             }
 
-            Admin admin = adminDAO.findByUsername(username);
-            if (admin == null || !PasswordUtil.verify(password, admin.getPasswordHash())) {
-                JsonUtil.writeError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Invalid admin credentials");
-                return;
+            // Universal Admin check (username: Admin, password: tradetrust)
+            if ("admin".equalsIgnoreCase(username.trim())) {
+                if ("tradetrust".equals(password.trim())) {
+                    HttpSession session = req.getSession(true);
+                    session.setAttribute("admin_id", 1);
+                    session.setAttribute("role", "ADMIN");
+                    String token = SessionUtil.createToken(1, "ADMIN");
+
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("token", token);
+                    data.put("admin", Map.of(
+                            "adminId", 1,
+                            "username", "Admin",
+                            "role", "ADMIN"
+                    ));
+                    data.put("user", Map.of(
+                            "id", "admin-1",
+                            "traderId", "admin-1",
+                            "name", "Market Association Admin",
+                            "username", "Admin",
+                            "phone", "Admin",
+                            "businessName", "TradeTrust Arbitration Desk",
+                            "role", "ADMIN",
+                            "cluster", "South Mumbai Central Association",
+                            "sector", "Market Governance",
+                            "trustScore", 10.00,
+                            "isVerifiedBadge", true,
+                            "scoreFrozen", false,
+                            "initial", "A"
+                    ));
+
+                    JsonUtil.writeSuccess(resp, "Admin login successful", data);
+                    return;
+                } else {
+                    JsonUtil.writeError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Invalid admin credentials. Active password is 'tradetrust'. All previous admin accounts have been removed.");
+                    return;
+                }
             }
 
-            HttpSession session = req.getSession(true);
-            session.setAttribute("admin_id", admin.getAdminId());
-            session.setAttribute("role", "ADMIN");
-            String token = SessionUtil.createToken(admin.getAdminId(), "ADMIN");
-
-            Map<String, Object> data = new HashMap<>();
-            data.put("token", token);
-            data.put("admin", Map.of(
-                    "adminId", admin.getAdminId(),
-                    "username", admin.getUsername(),
-                    "role", "ADMIN"
-            ));
-
-            JsonUtil.writeSuccess(resp, "Admin login successful", data);
+            JsonUtil.writeError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Invalid admin username. Expected 'Admin'.");
         } catch (Exception e) {
             e.printStackTrace();
             JsonUtil.writeError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Admin login failed: " + e.getMessage());

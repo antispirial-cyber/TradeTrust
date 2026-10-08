@@ -30,9 +30,84 @@ export function normalizePhone(p) {
   return digits.length >= 10 ? digits.slice(-10) : digits;
 }
 
+export const UNIVERSAL_ADMIN_USER = {
+  id: 'admin-1',
+  traderId: 'admin-1',
+  name: 'Market Association Admin',
+  username: 'Admin',
+  phone: 'Admin',
+  businessName: 'TradeTrust Arbitration Desk',
+  businessDesc: 'Authorized Market Association Administrator and Arbitration Panel',
+  role: 'ADMIN',
+  cluster: 'South Mumbai Central Association',
+  sector: 'Market Governance',
+  trustScore: 10.00,
+  isVerifiedBadge: true,
+  scoreFrozen: false,
+  initial: 'A'
+};
+
+export async function adminLogin({ username, password }) {
+  const cleanUser = (username || '').trim();
+  const cleanPass = (password || '').trim();
+
+  // 1. Attempt real Java backend admin login if active
+  try {
+    const res = await apiClient('/api/auth/admin-login', {
+      method: 'POST',
+      body: { username: cleanUser, password: cleanPass }
+    });
+
+    if (res.success && res.data) {
+      const user = UNIVERSAL_ADMIN_USER;
+      const token = res.data.token || ('tt-admin-session-' + Date.now());
+      setAuthToken(token);
+      setCurrentUser(user);
+      return {
+        success: true,
+        data: user,
+        message: 'Admin login successful'
+      };
+    }
+  } catch (err) {
+    console.warn('[TradeTrust] Backend admin login attempt:', err);
+  }
+
+  // 2. Universal hardcoded check (Active across all devices and static Vercel deployments)
+  // Username: Admin (case-insensitive), Password: tradetrust
+  if (cleanUser.toLowerCase() === 'admin') {
+    if (cleanPass === 'tradetrust') {
+      const token = 'tt-admin-session-' + Date.now();
+      setAuthToken(token);
+      setCurrentUser(UNIVERSAL_ADMIN_USER);
+      return {
+        success: true,
+        data: UNIVERSAL_ADMIN_USER,
+        message: 'Admin login successful'
+      };
+    } else {
+      return {
+        success: false,
+        message: 'Invalid Admin password. The active universal password is "tradetrust". (All prior admin accounts have been removed).'
+      };
+    }
+  }
+
+  return {
+    success: false,
+    message: 'Invalid admin username. Expected "Admin".'
+  };
+}
+
 export async function login({ phone, password }) {
+  const rawInput = (phone || '').trim();
   const cleanPhone = normalizePhone(phone);
   const cleanPass = (password || '').trim();
+
+  // 0. Universal Admin check on general login form (works seamlessly from any device)
+  if (rawInput.toLowerCase() === 'admin') {
+    return adminLogin({ username: rawInput, password: cleanPass });
+  }
 
   // 1. Attempt real Java backend login
   try {

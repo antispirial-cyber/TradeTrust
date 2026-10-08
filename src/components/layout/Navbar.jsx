@@ -37,7 +37,7 @@ export function Navbar({ unreadCount = 0 }) {
             </Link>
             <div
               className="navbar-avatar"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate(user.role === 'ADMIN' ? '/admin' : '/dashboard')}
               title={`${user.businessName || user.name} (${user.role})`}
             >
               {user.photoUrl ? (

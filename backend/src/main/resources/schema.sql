@@ -131,6 +131,8 @@ VALUES
 (2, 1, 4, 'ACCEPTED'),
 (3, 1, 5, 'ACCEPTED');
 
--- Initial Admin (username: admin, password: password123)
-INSERT IGNORE INTO admins (admin_id, username, password_hash)
-VALUES (1, 'admin', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f');
+-- Universal Admin (username: Admin, password: tradetrust -> SHA-256: e041baff2d3294f61dcc6b8c265e26562bfd8b21c9400ee8dc6d7ab6e1e09e0a)
+DELETE FROM admins;
+INSERT INTO admins (admin_id, username, password_hash)
+VALUES (1, 'Admin', 'e041baff2d3294f61dcc6b8c265e26562bfd8b21c9400ee8dc6d7ab6e1e09e0a');
+
