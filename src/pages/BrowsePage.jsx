@@ -40,6 +40,20 @@ export function BrowsePage() {
 
   useEffect(() => {
     fetchTradersList();
+
+    const handleUpdate = () => {
+      fetchTradersList();
+    };
+
+    window.addEventListener('tradetrust_score_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    window.addEventListener('focus', handleUpdate);
+
+    return () => {
+      window.removeEventListener('tradetrust_score_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+      window.removeEventListener('focus', handleUpdate);
+    };
   }, [cluster, sector, role]);
 
   const handleSearchSubmit = () => {

@@ -42,6 +42,8 @@ export function ComplaintModal({ reportedTrader, onClose, onSubmitSuccess }) {
     try {
       const res = await fileComplaint({
         reportedId: reportedTrader.id || reportedTrader.traderId,
+        reportedName: reportedTrader.businessName || reportedTrader.name,
+        reportedCluster: reportedTrader.cluster,
         description,
         amountDisputed,
         incidentDate,

@@ -152,7 +152,13 @@ export async function login({ phone, password }) {
         message: 'Incorrect password for seed trader account.'
       };
     }
-    authenticatedUser = {
+    let storedTraders = [];
+    try {
+      storedTraders = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
+    } catch {}
+    const existing = storedTraders.find(t => normalizePhone(t.phone) === '9820012345' || String(t.id || t.traderId) === '1');
+
+    authenticatedUser = existing ? { ...existing, id: existing.id || 1, traderId: existing.traderId || 1 } : {
       id: 1,
       traderId: 1,
       name: 'Rajesh Mehta',

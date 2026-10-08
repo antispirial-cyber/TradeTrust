@@ -11,6 +11,19 @@ export function AuthProvider({ children }) {
     const active = getCurrentUser();
     setUser(active);
     setLoading(false);
+
+    const handleSync = () => {
+      const refreshed = getCurrentUser();
+      setUser(refreshed);
+    };
+
+    window.addEventListener('tradetrust_score_updated', handleSync);
+    window.addEventListener('storage', handleSync);
+
+    return () => {
+      window.removeEventListener('tradetrust_score_updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
   }, []);
 
   const login = async (credentials) => {

@@ -414,6 +414,10 @@ export function AdminPage() {
                   const isPending = c.status === 'ESCALATED_TO_ADMIN' || c.status === 'ROUND_1_PENDING' || c.status === 'ROUND_2_PENDING';
                   const isApproved = c.status === 'APPROVED';
                   const isRejected = c.status === 'REJECTED';
+                  const reportedTraderObj = traders.find(t =>
+                    String(t.id || t.traderId) === String(c.reportedId) ||
+                    (c.reportedName && t.businessName && t.businessName.toLowerCase() === c.reportedName.toLowerCase())
+                  );
 
                   return (
                     <div key={c.id || c.complaintId} className={`dispute-card ${isPending ? 'pending' : ''}`}>
@@ -425,6 +429,20 @@ export function AdminPage() {
                           <span className="party-reported">
                             Reported: <strong>{c.reportedName || ('Merchant #' + c.reportedId)}</strong>
                             {c.reportedCluster && <span className="cluster-tag">{c.reportedCluster}</span>}
+                            {reportedTraderObj && (
+                              <span style={{
+                                marginLeft: '8px',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                background: 'rgba(255,255,255,0.06)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                color: Number(reportedTraderObj.trustScore) >= 8.5 ? '#10B981' : Number(reportedTraderObj.trustScore) >= 6.0 ? '#F59E0B' : '#EF4444'
+                              }}>
+                                ★ {Number(reportedTraderObj.trustScore).toFixed(2)}
+                              </span>
+                            )}
                           </span>
                         </div>
 

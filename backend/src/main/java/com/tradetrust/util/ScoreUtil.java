@@ -91,8 +91,14 @@ public class ScoreUtil {
     }
 
     public static void recalculateAndSave(int traderId, Connection conn) throws SQLException {
+        // When resolving arbitration, unfreeze so score reflects new verdict
+        String unfreezeSql = "UPDATE traders SET score_frozen = FALSE WHERE trader_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(unfreezeSql)) {
+            ps.setInt(1, traderId);
+            ps.executeUpdate();
+        }
         BigDecimal newScore = calculateScore(traderId, conn);
-        String updateSql = "UPDATE traders SET trust_score = ? WHERE trader_id = ? AND score_frozen = FALSE";
+        String updateSql = "UPDATE traders SET trust_score = ? WHERE trader_id = ?";
         try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
             ps.setBigDecimal(1, newScore);
             ps.setInt(2, traderId);

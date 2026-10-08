@@ -114,7 +114,7 @@ export async function getComplaintsByTrader(traderId) {
   };
 }
 
-export async function fileComplaint({ reportedId, description, amountDisputed, incidentDate, proofFileName, proofPath }) {
+export async function fileComplaint({ reportedId, description, amountDisputed, incidentDate, proofFileName, proofPath, reportedName, reportedCluster }) {
   try {
     const res = await apiClient('/api/complaint', {
       method: 'POST',
@@ -145,8 +145,9 @@ export async function fileComplaint({ reportedId, description, amountDisputed, i
     complaintId: Date.now(),
     reporterId: currentUser.id || currentUser.traderId || 1,
     reporterName: currentUser.businessName || currentUser.name || 'Verified Trader',
-    reportedId: Number(reportedId),
-    reportedName: 'Reported Trader #' + reportedId,
+    reportedId: reportedId,
+    reportedName: reportedName || ('Reported Trader #' + reportedId),
+    reportedCluster: reportedCluster || 'Zaveri Bazaar',
     description,
     amountDisputed: Number(amountDisputed) || 0,
     incidentDate: incidentDate || new Date().toISOString().split('T')[0],

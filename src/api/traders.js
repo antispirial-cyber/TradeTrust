@@ -31,8 +31,17 @@ export async function getTraders({ cluster, sector, role, search } = {}) {
   try {
     stored = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
   } catch {}
-  const phoneSet = new Set(stored.map(t => normalizePhone(t.phone)));
-  const combined = [...stored, ...INITIAL_TRADERS.filter(t => !phoneSet.has(normalizePhone(t.phone)))];
+  const storedIds = new Set(stored.map(t => String(t.id || t.traderId)).filter(Boolean));
+  const phoneSet = new Set(stored.map(t => normalizePhone(t.phone)).filter(Boolean));
+  const combined = [
+    ...stored,
+    ...INITIAL_TRADERS.filter(t => !storedIds.has(String(t.id || t.traderId)) && (!t.phone || !phoneSet.has(normalizePhone(t.phone))))
+  ].map(t => ({
+    ...t,
+    id: t.id || t.traderId,
+    trustScore: Number(Number(t.trustScore != null ? t.trustScore : 10).toFixed(2)),
+    initial: t.initial || (t.name ? t.name[0] : (t.businessName ? t.businessName[0] : 'T'))
+  }));
 
   let results = [...combined];
   if (cluster && cluster !== 'All Clusters') {
@@ -52,7 +61,7 @@ export async function getTraders({ cluster, sector, role, search } = {}) {
       (t.phone && t.phone.includes(q))
     );
   }
-  results.sort((a, b) => (b.trustScore || 0) - (a.trustScore || 0));
+  results.sort((a, b) => (Number(b.trustScore) || 0) - (Number(a.trustScore) || 0));
   return {
     success: true,
     data: results
@@ -60,28 +69,52 @@ export async function getTraders({ cluster, sector, role, search } = {}) {
 }
 
 export async function getTraderById(id) {
-  const res = await apiClient(`/api/traders/${id}`);
-  if (res.success && res.data) {
-    const trader = {
-      ...res.data,
-      id: res.data.id || res.data.traderId,
-      initial: res.data.name ? res.data.name[0] : (res.data.businessName ? res.data.businessName[0] : 'T')
-    };
-    return {
-      success: true,
-      data: trader
-    };
-  }
+  try {
+    const res = await apiClient(`/api/traders/${id}`);
+    if (res.success && res.data) {
+      const trader = {
+        ...res.data,
+        id: res.data.id || res.data.traderId,
+        trustScore: Number(Number(res.data.trustScore != null ? res.data.trustScore : 10).toFixed(2)),
+        initial: res.data.name ? res.data.name[0] : (res.data.businessName ? res.data.businessName[0] : 'T')
+      };
+      return {
+        success: true,
+        data: trader
+      };
+    }
+  } catch {}
 
   // Fallback to mock / stored custom traders
   let stored = [];
   try {
     stored = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
   } catch {}
-  const allTraders = [...stored, ...INITIAL_TRADERS];
-  const fallback = allTraders.find(t => String(t.id || t.traderId) === String(id));
-  if (fallback) {
-    return { success: true, data: fallback };
+
+  const fromStored = stored.find(t => String(t.id || t.traderId) === String(id));
+  if (fromStored) {
+    return {
+      success: true,
+      data: {
+        ...fromStored,
+        id: fromStored.id || fromStored.traderId,
+        trustScore: Number(Number(fromStored.trustScore != null ? fromStored.trustScore : 10).toFixed(2)),
+        initial: fromStored.initial || (fromStored.name ? fromStored.name[0] : (fromStored.businessName ? fromStored.businessName[0] : 'T'))
+      }
+    };
+  }
+
+  const fromInitial = INITIAL_TRADERS.find(t => String(t.id || t.traderId) === String(id));
+  if (fromInitial) {
+    return {
+      success: true,
+      data: {
+        ...fromInitial,
+        id: fromInitial.id || fromInitial.traderId,
+        trustScore: Number(Number(fromInitial.trustScore != null ? fromInitial.trustScore : 10).toFixed(2)),
+        initial: fromInitial.initial || (fromInitial.name ? fromInitial.name[0] : (fromInitial.businessName ? fromInitial.businessName[0] : 'T'))
+      }
+    };
   }
 
   return {
