@@ -6,8 +6,8 @@ import { useToast } from '../../context/ToastContext';
 import './ComplaintModal.css';
 
 export function AdminLoginModal({ onClose }) {
-  const [username, setUsername] = useState('Admin');
-  const [password, setPassword] = useState('tradetrust');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
@@ -33,11 +33,6 @@ export function AdminLoginModal({ onClose }) {
     }
   };
 
-  const handleQuickFill = () => {
-    setUsername('Admin');
-    setPassword('tradetrust');
-  };
-
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
@@ -54,14 +49,14 @@ export function AdminLoginModal({ onClose }) {
         <form onSubmit={handleAdminSubmit}>
           <div className="modal-body">
             <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginBottom: 'var(--space-md)', lineHeight: 1.5 }}>
-              Authorized arbitration access for Mumbai Trade Association committees. Universal administrator credentials operate across all devices.
+              Authorized arbitration access for Mumbai Trade Association committees.
             </p>
 
             <div className="form-group" style={{ marginBottom: 'var(--space-md)' }}>
               <label className="form-label">Admin Username</label>
               <input
                 type="text"
-                placeholder="Admin"
+                placeholder="Admin username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -72,41 +67,11 @@ export function AdminLoginModal({ onClose }) {
               <label className="form-label">Admin Password</label>
               <input
                 type="password"
-                placeholder="tradetrust"
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-            </div>
-
-            <div style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '8px 12px',
-              fontSize: '11px',
-              color: 'var(--text-muted)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 'var(--space-md)'
-            }}>
-              <span>Active: <strong>Admin / tradetrust</strong></span>
-              <button
-                type="button"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--accent-blue)',
-                  fontWeight: 600,
-                  fontSize: '11px',
-                  cursor: 'pointer',
-                  padding: 0
-                }}
-                onClick={handleQuickFill}
-              >
-                Reset to Default
-              </button>
             </div>
           </div>
 

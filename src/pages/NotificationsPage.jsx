@@ -7,10 +7,9 @@ import { useToast } from '../context/ToastContext';
 import './NotificationsPage.css';
 
 export function NotificationsPage() {
-  const { user, login } = useAuth();
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [signingIn, setSigningIn] = useState(false);
   const navigate = useNavigate();
   const outletCtx = useOutletContext();
   const { showToast } = useToast();
@@ -59,22 +58,6 @@ export function NotificationsPage() {
     }
   };
 
-  const handleQuickDemoLogin = async () => {
-    setSigningIn(true);
-    try {
-      const res = await login({ phone: '9820011111', password: 'tradetrust' });
-      if (res.success) {
-        showToast('Signed in as Rajpurohit Bangles');
-      } else {
-        navigate('/login');
-      }
-    } catch {
-      navigate('/login');
-    } finally {
-      setSigningIn(false);
-    }
-  };
-
   const getIconForType = (type) => {
     switch (type) {
       case 'admin_verdict':
@@ -103,35 +86,23 @@ export function NotificationsPage() {
           Commercial dispute notices, mutual connection approvals, and association arbitration findings are delivered privately to your trading account.
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-sm)' }}>
           <button
             type="button"
             className="modal-btn-primary"
-            style={{ width: '100%', padding: '12px 16px', background: 'var(--accent-blue)', color: '#fff', borderRadius: 'var(--radius-md)', fontWeight: 600 }}
-            onClick={handleQuickDemoLogin}
-            disabled={signingIn}
+            style={{ width: '100%', padding: '10px 14px' }}
+            onClick={() => navigate('/login?prompt=notifications')}
           >
-            {signingIn ? 'Loading Alerts...' : 'Quick Sign-In as Rajpurohit Bangles'}
+            Sign In to Account
           </button>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-sm)' }}>
-            <button
-              type="button"
-              className="modal-btn-secondary"
-              style={{ width: '100%', padding: '10px 14px' }}
-              onClick={() => navigate('/login?prompt=notifications')}
-            >
-              Sign In to Account
-            </button>
-            <button
-              type="button"
-              className="modal-btn-secondary"
-              style={{ width: '100%', padding: '10px 14px', borderColor: 'var(--accent-blue)', color: 'var(--accent-blue)' }}
-              onClick={() => navigate('/register')}
-            >
-              Register Free
-            </button>
-          </div>
+          <button
+            type="button"
+            className="modal-btn-secondary"
+            style={{ width: '100%', padding: '10px 14px', borderColor: 'var(--accent-blue)', color: 'var(--accent-blue)' }}
+            onClick={() => navigate('/register')}
+          >
+            Register Business
+          </button>
         </div>
       </div>
     );

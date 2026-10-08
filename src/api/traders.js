@@ -1,11 +1,30 @@
 import { apiClient } from './client';
 import { INITIAL_TRADERS } from './mockData';
 
+// Purge legacy storage keys from previous test runs
+if (typeof window !== 'undefined') {
+  const LEGACY_KEYS = [
+    'tradetrust_traders',
+    'tradetrust_disputes',
+    'tradetrust_past_records',
+    'tradetrust_auth_user',
+    'tradetrust_admin_unlocked',
+    'tradetrust_release_clean_v1'
+  ];
+  LEGACY_KEYS.forEach(k => {
+    try { localStorage.removeItem(k); } catch {}
+  });
+}
+
 // Retrieves all registered traders created by users on this client
 export function getRegisteredTraders() {
   try {
     const raw = localStorage.getItem('tradetrust_registered_traders');
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const list = JSON.parse(raw);
+    if (!Array.isArray(list)) return [];
+    const seedPhones = new Set(INITIAL_TRADERS.map(t => t.phone));
+    return list.filter(t => t && t.phone && !seedPhones.has(t.phone));
   } catch {
     return [];
   }

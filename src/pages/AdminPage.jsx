@@ -43,9 +43,9 @@ export function AdminPage() {
   const [broadcastCluster, setBroadcastCluster] = useState('All Clusters');
   const [isBroadcasting, setIsBroadcasting] = useState(false);
 
-  // Quick Login Form state for unauthorized visits
-  const [authUsername, setAuthUsername] = useState('Admin');
-  const [authPassword, setAuthPassword] = useState('tradetrust');
+  // Login form state for unauthorized visits
+  const [authUsername, setAuthUsername] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
 
   useEffect(() => {
@@ -196,17 +196,17 @@ export function AdminPage() {
                 value={authUsername}
                 onChange={(e) => setAuthUsername(e.target.value)}
                 required
-                placeholder="Admin"
+                placeholder="Admin username"
               />
             </div>
             <div className="form-group">
-              <label className="form-label">Passkey</label>
+              <label className="form-label">Password</label>
               <input
                 type="password"
                 value={authPassword}
                 onChange={(e) => setAuthPassword(e.target.value)}
                 required
-                placeholder="tradetrust"
+                placeholder="Password"
               />
             </div>
 
@@ -214,17 +214,6 @@ export function AdminPage() {
               {authLoading ? 'Verifying Credentials...' : 'Sign In as Administrator'}
             </button>
           </form>
-
-          <div className="admin-gate-quick">
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Universal Access Credentials:</span>
-            <div className="admin-creds-badge">
-              <code>Username: <strong>Admin</strong></code>
-              <code>Password: <strong>tradetrust</strong></code>
-            </div>
-            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
-              Hardcoded across all devices and web deployments. All previous legacy admin accounts have been purged.
-            </p>
-          </div>
         </div>
       </div>
     );
@@ -785,7 +774,7 @@ export function AdminPage() {
                 </div>
                 <div className="creds-detail-row">
                   <span>Password:</span>
-                  <code>tradetrust</code>
+                  <code>Configured</code>
                 </div>
                 <div className="creds-detail-row">
                   <span>Role:</span>

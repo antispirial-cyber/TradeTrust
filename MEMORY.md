@@ -1,5 +1,5 @@
 # TRADETRUST — PROJECT DOCUMENTATION & SYSTEM ARCHITECTURE
-**Academic Project:** Mumbai University, Semester 3
+**Academic Project:** Mumbai University, Semester 3 (Full Stack Java Technologies & Entrepreneurship Development)
 **Target Environment:** Localhost (MySQL 8 on port 3306 + Tomcat on port 8080 + React on port 3000)
 **Repository:** https://github.com/antispirial-cyber/TradeTrust.git
 
@@ -17,21 +17,22 @@
 9. [Trust Score Mathematical Algorithm & ScoreRing Dynamics](#9-trust-score-mathematical-algorithm--scorering-dynamics)
 10. [Frontend Structure, Routing & Component Hierarchy](#10-frontend-structure-routing--component-hierarchy)
 11. [Design System, Theme Tokens & Emoji-Free Standards](#11-design-system-theme-tokens--emoji-free-standards)
-12. [State Management, Cross-Tab Synchronization & Event Flow](#12-state-management-cross-tab-synchronization--event-flow)
+12. [State Management, Cross-Tab Synchronization & Storage Integrity](#12-state-management-cross-tab-synchronization--storage-integrity)
 13. [How to Run, Test, and Verify the Project](#13-how-to-run-test-and-verify-the-project)
 14. [Viva & Academic Presentation Key Concepts](#14-viva--academic-presentation-key-concepts)
+15. [Detailed Cleanup Changelog](#15-detailed-cleanup-changelog)
 
 ---
 
 ## 1. EXECUTIVE SUMMARY & ACADEMIC CONTEXT
 
-- **Project Title:** TradeTrust (Bazaar Merchant Credit Reputation & Arbitration Registry)
-- **Institution / Program:** Mumbai University, NEP 2020 Curriculum, Semester 3 (Final Year).
-- **Core Courses Evaluated:**
-  1. **Full Stack Java Technologies (FSJT)**: Multi-tier Client-Server Architecture, Jakarta Servlets (`HttpServlet`, `init`, `doGet`, `doPost`, `destroy`), raw 7-step JDBC, MySQL relational modeling, RESTful JSON communication.
-  2. **Entrepreneurship Development**: Market validation, trade credit risk mitigation, bazaar cluster dynamics, platform trust incentives.
-- **Academic Mentor Guidance:** For project grading, the professor specified: *"Database and Program are on the same machine for this semester"*.
-- **Operating Modes:** The platform is engineered to function in **Full-Stack Mode** (Java 17 + Tomcat + MySQL on localhost) as well as **Zero-Configuration Client Mode** (Vite + React + Local Storage mock engine) to guarantee 100% testability on static hosts like Vercel or machines without MySQL installed.
+- **Project Title:** TradeTrust (B2B Trust and Reputation Platform for Wholesale Bazaar Traders)
+- **Institution / Program:** Mumbai University, Semester 3 (Final Year).
+- **Core Syllabus Topics Covered:**
+  1. **Full Stack Java Technologies (FSJT)**: Multi-tier Client-Server Architecture, Jakarta Servlets (`HttpServlet`, `init`, `doGet`, `doPost`, `destroy`), raw 7-step JDBC with `PreparedStatement`, MySQL relational database schema, RESTful JSON communication, multipart file upload processing.
+  2. **Entrepreneurship Development**: Commercial trust mechanics, uncollateralized credit risk in informal trade clusters, bazaar mediation.
+- **Presentation Target:** Both database and application run on the same local machine during the course demonstration.
+- **Dual-Mode Operating Capability:** The project runs in **Full-Stack Mode** (Java 17 + Tomcat + MySQL on localhost) with a **Zero-Configuration Fallback** (Vite + React + LocalStorage fallback) to ensure accessibility on preview links (such as Vercel).
 
 ---
 
@@ -43,7 +44,7 @@
 - **The Pain:** When an unscrupulous merchant defaults or stalls payment indefinitely, that financial loss remains isolated to the victim. The defaulter easily moves two lanes over and takes fresh credit from another unsuspecting merchant.
 
 ### The Solution: TradeTrust
-- TradeTrust functions as a specialized hybrid of **LinkedIn + Private Credit Bureau** tailored to Indian bazaar merchants:
+- TradeTrust functions as a specialized reputation and informal credit record-keeping network tailored to Indian bazaar merchants:
   1. **Public Registry:** Searchable directory of wholesale and retail merchants categorized by Cluster and Sector.
   2. **Dynamic Trust Score (0.00 - 10.00):** Reputation score that increases with clean trade history and drops upon arbitrated payment defaults.
   3. **Admin Score Control:** Market Association Administrator can directly adjust any trader's score.
@@ -59,32 +60,32 @@ The technology stack is locked to the university curriculum requirements:
 
 | Component | Technology | Strict Constraint / Requirement |
 |---|---|---|
-| **Frontend** | React 18, Vite 5, React Router v6 | Pure functional components, hooks only (`useState`, `useEffect`, `useContext`, `useRef`). No class components. No server-side templates (No JSP, No Thymeleaf). |
-| **Styling** | Vanilla CSS + CSS Custom Properties | No CSS frameworks (No Tailwind, No Bootstrap, No Material UI). Fully responsive down to 375px mobile screens. Dynamic runtime token injection. |
+| **Frontend** | React 18, Vite 5, React Router v6 | Pure functional components, hooks only (`useState`, `useEffect`, `useContext`, `useRef`). No class components. No server-side templates. |
+| **Styling** | Vanilla CSS + CSS Custom Properties | No external CSS frameworks (No Tailwind, No Bootstrap, No Material UI). Fully responsive down to 375px mobile screens. Dynamic runtime token injection. |
 | **Backend** | Java 17, Spring Boot 3 (wrapper) | **Explicit Servlet classes** extending `HttpServlet`. Mandatory `doGet()`, `doPost()`, `init()`, and `destroy()` lifecycle implementations. |
 | **Database Access** | Raw JDBC (`java.sql.*`) | **Zero ORM / Zero JPA / Zero Hibernate / Zero Spring Data**. Every SQL statement is handwritten with `PreparedStatement`. |
-| **Database** | MySQL 8.x | Default port **3306** (explicitly NOT 3036, which was a typo in legacy notes). Database: `tradetrust_db`. |
+| **Database** | MySQL 8.x | Default port **3306**. Database: `tradetrust_db`. |
 | **Server / Proxy** | Embedded Tomcat (Port 8080) | Vite dev server on port 3000 proxies `/api` and `/uploads` to `http://localhost:8080`. |
-| **Build Tools** | Maven (`pom.xml`) + npm (`package.json`) | Standalone buildable both via `mvn clean compile` and `npm run build`. |
+| **Build Tools** | Maven (`pom.xml`) + npm (`package.json`) | Standalone buildable via `mvn clean compile` and `npm run build`. |
 
 ---
 
 ## 4. OFFICIAL ACCOUNTS & PURGED DUMMY DATA
 
-All legacy dummy accounts, dummy trader cards, and dummy complaints have been purged from the database seed script, backend authentication, and frontend mock data.
+All dummy accounts, dummy trader cards, and dummy complaints have been deleted from the database seed script, backend authentication, and frontend mock data.
 
-The system strictly contains **four official trader accounts** plus the **universal admin account**:
+The system strictly contains **four official trader accounts** plus the **main admin account**:
 
 | Trader Card / Business Name | Contact Phone | Password | Initial Score | Cluster | Role |
 |---|---|---|---|---|---|
-| **Rajpurohit Bangles** | `9820111111` | `tradetrust` | 10.00 | Zaveri Bazaar | Wholesaler |
-| **Sharma Electronics** | `9820222222` | `tradetrust` | 10.00 | Lamington Road | Wholesaler |
-| **Seliya Stationary** | `9820333333` | `tradetrust` | 10.00 | Crawford Market | Retailer |
-| **Sankhe Jwells** | `9820444444` | `tradetrust` | 10.00 | Zaveri Bazaar | Wholesaler |
-| **Market Association Admin** | `admin` / `9999999999` | `tradetrust` | N/A | Central Desk | Platform Admin |
+| **Rajpurohit Bangles** | `9820011111` | `tradetrust` | 10.00 | Zaveri Bazaar | Wholesaler |
+| **Sharma Electronics** | `9820022222` | `tradetrust` | 10.00 | Lamington Road | Retailer |
+| **Seliya Stationary** | `9820033333` | `tradetrust` | 10.00 | Crawford Market | Wholesaler |
+| **Sankhe Jwells** | `9820044444` | `tradetrust` | 10.00 | Zaveri Bazaar | Retailer |
+| **Market Association Admin** | Username: `Admin` | `tradetrust` | 10.00 | South Mumbai | Platform Admin |
 
-- **Login Flexibility:** Traders can log in using either their registered phone number or their exact business name / trader card.
-- **Admin Access:** Accessible at `/admin` using username `Admin` and password `tradetrust`.
+- **Clean Inputs:** All login, registration, and admin lock screen forms start completely empty with clean placeholders. No credentials or demo shortcuts are prefilled into input fields.
+- **Universal Admin:** Accessible at `/admin` using username `Admin` and password `tradetrust`.
 
 ---
 
@@ -106,102 +107,54 @@ The system strictly contains **four official trader accounts** plus the **univer
              +---------------------------------------+   +---------------------------------------+
              |    Tomcat HTTP Server (Port 8080)     |   |       Client LocalStorage Engine      |
              |   Jakarta Servlets (HttpServlet)      |   |---------------------------------------|
-             |  - AuthServlet        - ComplaintServlet|   | - tradetrust_traders                  |
+             |  - AuthServlet        - ComplaintServlet|   | - tradetrust_registered_traders       |
              |  - TraderServlet      - LedgerServlet |   | - tradetrust_complaints               |
-             |  - BrowseServlet      - ConnectionServlet| | - tradetrust_current_user            |
-             |  - ScoreServlet       - AdminServlet  |   | - tradetrust_notifications            |
-             |  - UploadServlet                      |   | - tradetrust_ledger                   |
+             |  - AdminServlet       - UploadServlet |   | - tradetrust_ledger                   |
+             |  - ConnectionServlet  - ScoreServlet  |   | - tradetrust_notifications            |
+             |  - PingServlet        - BrowseServlet |   | - tradetrust_current_user             |
              +---------------------------------------+   +---------------------------------------+
                                  |
                                  v
              +---------------------------------------+
-             |            DAO Layer (JDBC)           |
-             |  - TraderDAO          - ComplaintDAO  |
-             |  - LedgerDAO          - AdminDAO      |
+             |            Raw JDBC Layer             |
+             |  PreparedStatement + DBConnection     |
              +---------------------------------------+
                                  |
                                  v
              +---------------------------------------+
-             |         MySQL 8 (Port 3306)           |
-             |           tradetrust_db               |
+             |       MySQL Database (Port 3306)      |
+             |             tradetrust_db             |
              +---------------------------------------+
 ```
 
-### Localhost Persistence Requirement
-- When a user signs up on localhost, the registration is stored permanently in the MySQL database (`tradetrust_db`) via `TraderDAO.insertTrader()`.
-- The user session is persisted in browser local storage and tied to their registered phone number and credentials, allowing seamless repeat logins from the same device across browser restarts and server restarts without re-registering.
+### Persistence Guarantee
+- **New Registrations:** When a user registers via the Sign Up form, the account is permanently persisted in the MySQL `traders` table (or local storage fallback), survives restarts, and allows repeated logins with the user's phone and password.
+- **Session Continuity:** Authenticated sessions are safely stored under `tradetrust_current_user` and validated against existing registered or official accounts on startup.
 
 ---
 
 ## 6. DATABASE SCHEMA & JDBC LAYER
 
-Located at: `backend/src/main/resources/schema.sql`
+The relational database is configured in `backend/src/main/resources/schema.sql` on MySQL 8 (`tradetrust_db` on port 3306):
 
-### Tables Summary
-1. **`traders`**:
-   - `trader_id` INT AUTO_INCREMENT PRIMARY KEY
-   - `name` VARCHAR(100) NOT NULL
-   - `phone` VARCHAR(15) NOT NULL UNIQUE
-   - `business_name` VARCHAR(150) NOT NULL
-   - `business_desc` TEXT
-   - `role` ENUM('WHOLESALER','RETAILER') NOT NULL
-   - `cluster` VARCHAR(100) NOT NULL
-   - `sector` VARCHAR(100) NOT NULL
-   - `photo_path` VARCHAR(255)
-   - `password_hash` VARCHAR(255) NOT NULL (SHA-256)
-   - `trust_score` DECIMAL(4,2) DEFAULT 10.00
-   - `score_frozen` BOOLEAN DEFAULT FALSE
-   - `score_before_freeze` DECIMAL(4,2)
-   - `is_verified_badge` BOOLEAN DEFAULT FALSE
-   - `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+1. **`traders` Table:** `trader_id` (PK, AUTO_INCREMENT), `name`, `phone` (UNIQUE), `business_name`, `business_desc`, `role` (ENUM: WHOLESALER, RETAILER), `cluster`, `sector`, `photo_path`, `password_hash`, `trust_score` (DECIMAL 4,2 DEFAULT 10.00), `score_frozen` (BOOLEAN), `is_verified_badge` (BOOLEAN), `created_at`.
+2. **`complaints` Table:** `complaint_id` (PK), `reporter_id` (FK -> traders), `reported_id` (FK -> traders), `description`, `amount_disputed` (DECIMAL 12,2), `incident_date`, `proof_path`, `status` (ENUM: ROUND_1_PENDING, ROUND_1_COUNTER_FILED, ROUND_2_PENDING, ROUND_2_COUNTER_FILED, ESCALATED_TO_ADMIN, APPROVED, REJECTED, RETAKE_REQUESTED, RETAKE_APPROVED), timestamps.
+3. **`complaint_rounds` Table:** Multi-stage arbitration evidence exchange.
+4. **`ledger_entries` Table:** Private double-entry credit ledger (`owner_id`, `party_name`, `amount`, `entry_type`, `status`).
+5. **`connections` Table:** Mutual bazaar trade relationships.
+6. **`notifications` Table:** Commercial dispute notices, connection requests, and arbitration verdicts.
+7. **`admins` Table:** Universal administrator credentials.
+8. **`trader_settings` Table:** Accent color and interface preferences.
 
-2. **`complaints`**:
-   - `complaint_id` INT AUTO_INCREMENT PRIMARY KEY
-   - `reporter_id` INT NOT NULL (FK -> `traders`)
-   - `reported_id` INT NOT NULL (FK -> `traders`)
-   - `description` TEXT NOT NULL
-   - `amount_disputed` DECIMAL(12,2)
-   - `incident_date` DATE NOT NULL
-   - `proof_path` VARCHAR(255)
-   - `status` ENUM('PENDING','ROUND_1_COUNTER_FILED','ESCALATED_TO_ADMIN','APPROVED','REJECTED','RETAKE_REQUESTED','RETAKE_APPROVED')
-   - `created_at` DATETIME, `updated_at` DATETIME
-
-3. **`ledger_entries`**:
-   - `entry_id` INT AUTO_INCREMENT PRIMARY KEY
-   - `owner_id` INT NOT NULL (FK -> `traders`)
-   - `party_name` VARCHAR(150) NOT NULL
-   - `amount` DECIMAL(12,2) NOT NULL
-   - `entry_type` ENUM('CREDIT_GIVEN','CREDIT_RECEIVED') NOT NULL
-   - `entry_date` DATE NOT NULL
-   - `description` VARCHAR(255)
-   - `status` ENUM('PENDING','PAID','OVERDUE') DEFAULT 'PENDING'
-
-4. **`connections`**:
-   - `connection_id` INT AUTO_INCREMENT PRIMARY KEY
-   - `requester_id` INT NOT NULL, `receiver_id` INT NOT NULL
-   - `status` ENUM('PENDING','ACCEPTED','REJECTED') DEFAULT 'PENDING'
-
-5. **`notifications`**:
-   - `notification_id` INT AUTO_INCREMENT PRIMARY KEY
-   - `recipient_id` INT NOT NULL
-   - `type` VARCHAR(50) NOT NULL
-   - `message` TEXT NOT NULL, `link_ref` VARCHAR(255), `is_read` BOOLEAN DEFAULT FALSE
-
-6. **`admins`**:
-   - `admin_id` INT AUTO_INCREMENT PRIMARY KEY
-   - `username` VARCHAR(50) NOT NULL UNIQUE
-   - `password_hash` VARCHAR(255) NOT NULL
-   - `role` VARCHAR(50) DEFAULT 'SUPER_ADMIN'
-
-### The Mandatory 7-Step JDBC Execution Standard
-All DAOs adhere strictly to the syllabus pattern:
+### Standard JDBC Execution Pipeline
+In compliance with the syllabus, every database operation follows the 7-step JDBC workflow:
 1. Load JDBC driver: `Class.forName("com.mysql.cj.jdbc.Driver");`
-2. Create connection: `Connection conn = DriverManager.getConnection(url, user, pass);`
-3. Create statement: `PreparedStatement ps = conn.prepareStatement(sql);`
-4. Set query parameters: `ps.setObject(index, value);`
-5. Execute query: `ResultSet rs = ps.executeQuery();` or `ps.executeUpdate()`
-6. Process results: Iterate `while (rs.next())` and map to domain objects
-7. Close resources: Try-with-resources or explicit close in `finally` block
+2. Establish connection: `DriverManager.getConnection(url, user, password);`
+3. Prepare SQL statement: `PreparedStatement ps = conn.prepareStatement(sql);`
+4. Bind parameters: `ps.setString(1, ...);`, `ps.setInt(2, ...);`
+5. Execute query: `ResultSet rs = ps.executeQuery();` or `ps.executeUpdate();`
+6. Process result set: Map rows to model beans (`Trader`, `Complaint`, `LedgerEntry`)
+7. Close resources: Managed automatically via Java try-with-resources blocks.
 
 ---
 
@@ -213,55 +166,52 @@ All DAOs adhere strictly to the syllabus pattern:
 - **Admin UI:** Accessible in `/admin` under the **Merchants** tab via the **Edit Score** button on any trader row.
 
 ### 7.2 Complaint Visibility
-In `/admin` under the **Disputes** queue, every arbitration case card displays:
-1. **Who filed the complaint:** Filer business name or name.
-2. **User ID:** Filer's integer ID (`User ID: X`).
-3. **Reported Trader Card:** Reported merchant business name and cluster.
-4. **Dispute Meta:** Disputed amount in INR, incident date, and proof document link.
+In `/admin` under the **Disputes** queue, every arbitration case card clearly shows:
+1. **Who filed the complaint:** Filer business name / full name.
+2. **Filer User ID:** Explicit user ID (`User ID: X`).
+3. **Reported Trader Card:** Reported merchant business name, cluster tag, and active trust score badge.
+4. **Dispute Details:** Disputed amount in INR, incident date, grievance description, and attached evidence link.
 
 ### 7.3 Complaint Retake Flow
 ```
-[User Filed Complaint]
+[User Files Dispute]
           |
           v
-[User Dashboard -> Disputes Tab]
+[Complainant opens Dashboard -> Disputes Tab]
           |
-          | User clicks "Retake Complaint"
+          | Complainant clicks "Retake Complaint"
           v
-[Status Changed to RETAKE_REQUESTED]
+[Status Flags to RETAKE_REQUESTED]
           |
           v
-[Admin Arbitration Queue]
-  - Displays prominent Retake Notice Banner:
-    "RETAKE REQUESTED: The complainant has requested to withdraw/retake this complaint."
-  - Provides Action Buttons: "Approve Retake" vs "Dismiss Request"
+[Admin Arbitration Queue Alert Banner]
+  - Displays: "[Retake Flagged]: The filing user (User ID: X) has requested to retake/withdraw this complaint."
+  - Action buttons: "Approve Retake" vs "Reject Retake"
           |
-          +-------------------------------+
-          |                               |
-          v                               v
-[Admin Approves Retake]          [Admin Dismisses Retake]
-  - Status -> RETAKE_APPROVED      - Status reverts to ESCALATED_TO_ADMIN
-  - If previously APPROVED:        - Investigation proceeds as normal
-    * Score penalty (+1.50)
-      is revoked and restored
-    * Score is unfrozen
-  - If previously PENDING:
-    * Score is unfrozen
-    * No penalty ever applied
+          +-----------------------------------------+
+          |                                         |
+          v                                         v
+[Admin Approves Retake]                    [Admin Rejects Retake]
+  - Status -> RETAKE_APPROVED                - Status -> ESCALATED_TO_ADMIN
+  - Score Handling:                          - Complaint remains active in dispute queue
+    * If complaint was previously APPROVED:  - Penalties remain in place
+      The 1.50 point deduction is restored.
+    * Score is unfrozen.
+    * Claim is officially withdrawn.
 ```
 
 ---
 
 ## 8. FILE UPLOAD PIPELINE (PDFS AND IMAGES)
 
-### Implementation Details
+### Localhost File Uploads
 - **Frontend Utility:** `src/utils/fileUpload.js` accepts file objects and dispatches a multipart `FormData` POST request to `/api/upload`.
-- **Backend Handler:** `UploadServlet.java` running on embedded Tomcat:
-  - Validates MIME types: `application/pdf`, `image/jpeg`, `image/png`, `image/webp`.
-  - Generates unique timestamped filenames: `doc_<timestamp>_<clean_filename>`.
-  - Stores files in `backend/uploads/` on the local machine.
-  - Serves files with inline disposition (`Content-Disposition: inline`) allowing direct in-browser preview of PDF vouchers and invoices during demonstrations.
-- **Client Fallback:** If the backend is running in offline mode, `fileUpload.js` automatically converts the file into a base64 Data URL, allowing instant client-side preview in the browser.
+- **Backend Handler:** `UploadServlet.java` running on embedded Tomcat with `@MultipartConfig`:
+  - Validates file presence and extensions (`.pdf`, `.png`, `.jpg`, `.jpeg`).
+  - Generates secure UUID filenames to prevent collisions and directory traversal.
+  - Stores uploaded files directly in the local `uploads/` directory.
+  - Serves files at `/uploads/{filename}` with proper MIME headers (`application/pdf`, `image/png`, `image/jpeg`) and inline content-disposition, allowing PDFs to open directly in the browser during demo presentations.
+- **Client Fallback:** In static environments without a running Tomcat server, `fileUpload.js` converts uploaded files to Data URLs, preserving full upload and preview functionality in the browser.
 
 ---
 
@@ -281,11 +231,10 @@ Rounding: RoundingMode.HALF_UP to 2 decimal places
 
 ### Color Interpolation & Ring Visualization
 The ScoreRing SVG is defined in `src/components/common/ScoreRing.jsx`:
-- `0.0` -> Deep Red `rgb(214, 40, 40)`
-- `2.5` -> Orange `rgb(247, 127, 0)`
-- `5.0` -> Amber `rgb(244, 211, 94)`
-- `7.5` -> Lime `rgb(144, 190, 109)`
-- `10.0` -> Vivid Green `rgb(45, 198, 83)`
+- `0.00 - 4.99`: Red (Critical Default / High Risk)
+- `5.00 - 7.49`: Amber / Yellow (Average Standing / Pending Disputes)
+- `7.50 - 8.49`: Lime / Light Green (Good Standing)
+- `8.50 - 10.00`: Emerald Green (Prime Merchant / Clean Ledger)
 
 ---
 
@@ -294,7 +243,7 @@ The ScoreRing SVG is defined in `src/components/common/ScoreRing.jsx`:
 ```
 src/
 ├── App.jsx                     (Router root, ToastProvider, ThemeProvider, AuthProvider)
-├── main.jsx                    (Entrypoint, imports global.css & variables.css)
+├── main.jsx                    (Standard React 18 createRoot render)
 ├── api/                        (Dual-mode API abstraction layer)
 │   ├── admin.js                (Metrics, dispute resolution, retake approval, custom score)
 │   ├── auth.js                 (Login, register, adminLogin, current user session)
@@ -312,8 +261,8 @@ src/
 │   │   └── TraderCard.jsx      (Card with 48px ScoreRing, photo/initial, ConnectButton)
 │   ├── common/
 │   │   ├── ConnectButton.jsx   (Toggle state: Connect, Pending, Connected)
-│   │   ├── CourseworkPortfolio.jsx (Academic syllabus coursework proof bar)
-│   │   ├── FloatingHelp.jsx    (Quick syllabus & help popup widget)
+│   │   ├── CourseworkPortfolio.jsx (Academic coursework PDF evaluation docket)
+│   │   ├── FloatingHelp.jsx    (Feature guide popup widget)
 │   │   ├── Icons.jsx           (Feather-style SVG icons: Sun, Moon, Check, UploadCloud, etc.)
 │   │   ├── ScoreRing.jsx       (Dynamic SVG ring with glow and color interpolation)
 │   │   └── VerifiedBadge.jsx   (Green badge for clean traders)
@@ -341,7 +290,7 @@ src/
 │   ├── AdminPage.jsx           (Full Association Governance, Score Control & Arbitration)
 │   ├── BrowsePage.jsx          (Public merchant registry directory)
 │   ├── DashboardPage.jsx       (Profile, Ledger, Past Records, Filed Disputes)
-│   ├── LoginPage.jsx           (Auth portal with 4 official account quick-login buttons)
+│   ├── LoginPage.jsx           (Clean sign in & business registration)
 │   ├── NotFoundPage.jsx        (404 catch-all screen)
 │   ├── NotificationsPage.jsx   (Notifications feed)
 │   ├── PublicProfilePage.jsx   (Merchant public profile with 120px ScoreRing)
@@ -355,21 +304,20 @@ src/
 
 ## 11. DESIGN SYSTEM, THEME TOKENS & EMOJI-FREE STANDARDS
 
-- **Zero Emojis Policy:** All emojis have been completely eliminated from source code, string literals, comments, console logs, and user-facing outputs across both frontend and backend. Standard SVG icons (from `Icons.jsx`) or clean text labels are used throughout.
+- **Zero Emojis Policy:** All emojis have been eliminated from source code, string literals, comments, console logs, and user-facing outputs across both frontend and backend. Standard SVG icons (from `Icons.jsx`) or clean text labels are used throughout.
 - **Dark Obsidian Theme (`:root, [data-theme="dark"]`):** High contrast bazaar trading palette with deep navy cards.
 - **Light Slate Theme (`[data-theme="light"]`):** Crisp 2-tone canvas with Slate-300 borders and Slate-900 typography.
 
 ---
 
-## 12. STATE MANAGEMENT, CROSS-TAB SYNCHRONIZATION & EVENT FLOW
+## 12. STATE MANAGEMENT, CROSS-TAB SYNCHRONIZATION & STORAGE INTEGRITY
 
 1. **Custom Event (`tradetrust_score_updated`):** Dispatched whenever an admin resolves a complaint, toggles a freeze, or edits a score.
-2. **Storage Event (`storage`):** Fired across browser tabs to synchronize updates.
-3. **Window Focus Event (`focus`):** Re-fetches current scores when the user switches tabs back to the registry or profile.
-4. **Subscribed Components:**
-   - `BrowsePage.jsx`: Re-fetches and updates all cards.
-   - `PublicProfilePage.jsx`: Re-fetches the merchant record.
-   - `AuthContext.jsx`: Updates the session user's score if they were the reported merchant.
+2. **Storage Event (`storage`):** Synchronizes updates across tabs.
+3. **Window Focus Event (`focus`):** Re-fetches current scores when returning to the registry or profile.
+4. **Storage Integrity at the Source:**
+   - Obsolete legacy keys (`tradetrust_traders`, `tradetrust_disputes`, `tradetrust_past_records`, `tradetrust_auth_user`, `tradetrust_admin_unlocked`) are automatically cleared at startup.
+   - `getStoredComplaints()` ensures that complaints in local storage only reference valid traders (the four seed accounts or genuine new user registrations), preventing stale dummy records from lingering in the UI.
 
 ---
 
@@ -397,21 +345,48 @@ npm run dev
    npm run dev
    ```
 
-### Default Credentials for Verification
+### Official Verification Credentials
 - **Universal Admin:** Username `Admin`, Password `tradetrust` (at `/admin`)
-- **Trader 1:** `Rajpurohit Bangles` (Phone: `9820111111`, Password: `tradetrust`)
-- **Trader 2:** `Sharma Electronics` (Phone: `9820222222`, Password: `tradetrust`)
-- **Trader 3:** `Seliya Stationary` (Phone: `9820333333`, Password: `tradetrust`)
-- **Trader 4:** `Sankhe Jwells` (Phone: `9820444444`, Password: `tradetrust`)
+- **Trader 1:** `Rajpurohit Bangles` (Phone: `9820011111`, Password: `tradetrust`)
+- **Trader 2:** `Sharma Electronics` (Phone: `9820022222`, Password: `tradetrust`)
+- **Trader 3:** `Seliya Stationary` (Phone: `9820033333`, Password: `tradetrust`)
+- **Trader 4:** `Sankhe Jwells` (Phone: `9820044444`, Password: `tradetrust`)
 
 ---
 
 ## 14. VIVA & ACADEMIC PRESENTATION KEY CONCEPTS
 
-Be prepared to explain the following during the presentation:
-1. **Client-Server Architecture:** Separation of concerns between React SPA presentation tier, Jakarta Servlet application tier on Tomcat, and MySQL relational persistence tier.
-2. **Tomcat Servlet Lifecycle:** `init()` (initialization once), `service()` / `doGet()` / `doPost()` (per-request handling on worker threads), and `destroy()` (clean resource release).
-3. **7-Step JDBC Pipeline:** Explicit loading of driver, connection pooling / connection management, parameterized `PreparedStatement` to prevent SQL Injection, and resource closing.
+Be ready to explain the following during the presentation:
+1. **Multi-Tier Architecture:** How the React frontend communicates with Tomcat Servlets over HTTP REST endpoints, and how Servlets interact with MySQL via JDBC.
+2. **Tomcat Servlet Lifecycle:** `init()` (called once during initialization), `doGet()` and `doPost()` (called per request by the servlet container), and `destroy()` (called when the servlet is unloaded).
+3. **7-Step JDBC Pipeline:** Explicit loading of MySQL driver, creating database connections, using `PreparedStatement` with parameterized placeholders (`?`) to prevent SQL injection, executing queries, iterating through `ResultSet`, and closing resources.
 4. **Zero ORM Rationale:** Why raw JDBC was chosen over JPA/Hibernate (exact alignment with semester syllabus, transparent SQL execution, predictable performance).
-5. **Dynamic Trust Score Algorithm:** Mathematical penalty formula, score freezing during pending arbitration, and the retake penalty reversal mechanism.
-6. **Retake Complaint Workflow:** The bilateral dispute protocol where filers can request retakes, requiring administrative approval before penalties or freezes are lifted.
+5. **Dynamic Trust Score Algorithm:** Baseline 10.00 score, deduction of 1.50 for approved complaints, ledger settlement adjustments (+0.10 for paid, -0.50 for overdue), and mutual connection bonuses (+0.05).
+6. **Retake Complaint Workflow:** Why complaints can be retaken/withdrawn by the filing merchant, why administrative approval is required before the retake takes effect, and how trust scores are restored when retakes are approved.
+7. **Multipart Upload Pipeline:** How `UploadServlet` processes `multipart/form-data`, validates files, generates secure filenames on disk, and serves them inline for in-browser PDF viewing.
+
+---
+
+## 15. DETAILED CLEANUP CHANGELOG
+
+1. **Removed Login Prefills & Demo Shortcuts:**
+   - Modified `LoginPage.jsx` to start phone and password state as empty strings (`''`).
+   - Removed the 4 "Quick Demo Accounts" auto-login buttons from the sign-in screen.
+   - Cleaned password placeholders from `placeholder="Account password (tradetrust)"` to `placeholder="Password"`.
+   - Modified `AdminLoginModal.jsx` and `AdminPage.jsx` gate screen to start with empty inputs, removing hardcoded prefilled credentials and reset buttons.
+   - Removed quick demo auto-login buttons from `DashboardPage.jsx` and `NotificationsPage.jsx`, leaving standard navigation to `/login` and `/register`.
+
+2. **Fixed Source Code Instead of Layered Workarounds:**
+   - Removed temporary `RESET_KEY` cache-clearing logic from `main.jsx`, restoring standard React root mounting.
+   - Fixed data integrity directly at the source in `traders.js` and `complaints.js` by filtering out non-existent trader references and legacy storage keys.
+
+3. **Removed Dead Code and Unused Files:**
+   - Deleted redundant root image asset `logo.png.png`.
+   - Deleted unused component files `src/components/common/BlankDropbox.jsx` and `BlankDropbox.css`.
+
+4. **Preserved Coursework Portfolio:**
+   - Retained `CourseworkPortfolio.jsx` and `CourseworkPortfolio.css` mounted at the bottom of `BrowsePage.jsx` for coursework assignment and experiment PDF verification.
+
+5. **Build Verification:**
+   - Frontend compiled successfully with `vite build` into `dist/` with zero errors.
+   - Backend compiled successfully with `mvn clean compile` across all 34 Java source files.

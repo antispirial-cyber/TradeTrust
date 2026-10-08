@@ -19,7 +19,6 @@ export function DashboardPage() {
 
   const [activeTab, setActiveTab] = useState('profile');
   const [isPastRecordsUnlocked, setIsPastRecordsUnlocked] = useState(false);
-  const [signingIn, setSigningIn] = useState(false);
 
   const tabParam = searchParams.get('tab');
 
@@ -56,22 +55,6 @@ export function DashboardPage() {
     }
   };
 
-  const handleQuickDemoLogin = async () => {
-    setSigningIn(true);
-    try {
-      const res = await login({ phone: '9820011111', password: 'tradetrust' });
-      if (res.success) {
-        showToast('Signed in as Rajpurohit Bangles');
-      } else {
-        navigate('/login');
-      }
-    } catch {
-      navigate('/login');
-    } finally {
-      setSigningIn(false);
-    }
-  };
-
   if (!user) {
     const isLedgerRequest = tabParam === 'ledger';
     return (
@@ -85,35 +68,23 @@ export function DashboardPage() {
             : 'Access your verified merchant credentials, dynamic Mumbai Bazaar trust score, and association dispute history.'}
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-sm)' }}>
           <button
             type="button"
             className="modal-btn-primary"
-            style={{ width: '100%', padding: '12px 16px', background: 'var(--accent-blue)', color: '#fff', borderRadius: 'var(--radius-md)', fontWeight: 600 }}
-            onClick={handleQuickDemoLogin}
-            disabled={signingIn}
+            style={{ width: '100%', padding: '10px 14px' }}
+            onClick={() => navigate('/login')}
           >
-            {signingIn ? 'Loading Trader Profile...' : 'Quick Sign-In as Trader (Rajpurohit Bangles)'}
+            Sign In to Account
           </button>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-sm)' }}>
-            <button
-              type="button"
-              className="modal-btn-secondary"
-              style={{ width: '100%', padding: '10px 14px' }}
-              onClick={() => navigate('/login')}
-            >
-              Sign In to Account
-            </button>
-            <button
-              type="button"
-              className="modal-btn-secondary"
-              style={{ width: '100%', padding: '10px 14px', borderColor: 'var(--accent-blue)', color: 'var(--accent-blue)' }}
-              onClick={() => navigate('/register')}
-            >
-              Register Free
-            </button>
-          </div>
+          <button
+            type="button"
+            className="modal-btn-secondary"
+            style={{ width: '100%', padding: '10px 14px', borderColor: 'var(--accent-blue)', color: 'var(--accent-blue)' }}
+            onClick={() => navigate('/register')}
+          >
+            Register Business
+          </button>
         </div>
       </div>
     );

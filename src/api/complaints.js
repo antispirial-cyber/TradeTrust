@@ -1,8 +1,29 @@
 import { apiClient } from './client';
 import { getCurrentUser } from './auth';
+import { getLocalTradersList } from './traders';
 
 // No dummy complaints - clean slate for the four official accounts
 export const INITIAL_ADMIN_COMPLAINTS = [];
+
+function getStoredComplaints() {
+  try {
+    const raw = localStorage.getItem('tradetrust_complaints');
+    if (!raw) return [];
+    const list = JSON.parse(raw);
+    if (!Array.isArray(list)) return [];
+    const validTraders = getLocalTradersList();
+    const validIds = new Set(validTraders.map(t => String(t.id || t.traderId)));
+    const validNames = new Set(validTraders.map(t => (t.businessName || t.name || '').toLowerCase().trim()));
+    return list.filter(c => {
+      if (!c) return false;
+      const repId = String(c.reportedId || c.traderId);
+      const repName = (c.reportedName || '').toLowerCase().trim();
+      return validIds.has(repId) || (repName && validNames.has(repName));
+    });
+  } catch {
+    return [];
+  }
+}
 
 export async function getAllComplaints() {
   // 1. Attempt backend
@@ -22,14 +43,9 @@ export async function getAllComplaints() {
   }
 
   // 2. Fallback to localStorage
-  let stored = [];
-  try {
-    stored = JSON.parse(localStorage.getItem('tradetrust_complaints') || '[]');
-  } catch {}
-
   return {
     success: true,
-    data: stored
+    data: getStoredComplaints()
   };
 }
 
@@ -53,11 +69,7 @@ export async function getComplaintsByTrader(traderId) {
   } catch {}
 
   // Fallback to local stored
-  let stored = [];
-  try {
-    stored = JSON.parse(localStorage.getItem('tradetrust_complaints') || '[]');
-  } catch {}
-
+  const stored = getStoredComplaints();
   const approved = stored.filter(c => Number(c.reportedId) === Number(traderId) && c.status === 'APPROVED');
   return {
     success: true,
@@ -82,11 +94,7 @@ export async function getUserFiledComplaints(userId) {
     }
   } catch {}
 
-  let stored = [];
-  try {
-    stored = JSON.parse(localStorage.getItem('tradetrust_complaints') || '[]');
-  } catch {}
-
+  const stored = getStoredComplaints();
   const userList = stored.filter(c => String(c.reporterId) === String(userId));
   return {
     success: true,

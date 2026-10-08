@@ -39,9 +39,9 @@ export function LoginPage({ initialTab }) {
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
 
-  // Login form state (defaulted to official account for presentation)
-  const [phone, setPhone] = useState('9820011111');
-  const [password, setPassword] = useState('tradetrust');
+  // Login form state starts completely empty
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
 
   // Register form state
   const [regName, setRegName] = useState('');
@@ -113,28 +113,6 @@ export function LoginPage({ initialTab }) {
     }
   };
 
-  const handleQuickLogin = async (targetPhone, targetPass) => {
-    setLoading(true);
-    try {
-      const res = await login({ phone: targetPhone, password: targetPass });
-      if (res.success) {
-        if (res.data?.role === 'ADMIN') {
-          showToast('Welcome, Market Association Administrator!');
-          navigate('/admin');
-        } else {
-          showToast('Welcome back, ' + (res.data.businessName || res.data.name || 'Trader') + '!');
-          navigate('/dashboard');
-        }
-      } else {
-        alert(res.message || 'Quick login failed');
-      }
-    } catch (err) {
-      alert('Error: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const getPromptMessage = () => {
     if (promptFromQuery === 'ledger') return 'Please sign in to access your Private Credit Ledger.';
     if (promptFromQuery === 'notifications') return 'Please sign in to view your Market Alerts & Notifications.';
@@ -166,51 +144,6 @@ export function LoginPage({ initialTab }) {
           </div>
         )}
 
-        {/* Quick Accounts Evaluation Strip */}
-        <div style={{ marginBottom: 'var(--space-md)' }}>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px', textAlign: 'center', fontWeight: 600 }}>
-            Quick Demo Accounts (Password: tradetrust):
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-            <button
-              type="button"
-              className="modal-btn-secondary"
-              style={{ fontSize: '11px', padding: '6px 8px', textAlign: 'center' }}
-              onClick={() => handleQuickLogin('9820011111', 'tradetrust')}
-              disabled={loading}
-            >
-              Rajpurohit Bangles
-            </button>
-            <button
-              type="button"
-              className="modal-btn-secondary"
-              style={{ fontSize: '11px', padding: '6px 8px', textAlign: 'center' }}
-              onClick={() => handleQuickLogin('9820022222', 'tradetrust')}
-              disabled={loading}
-            >
-              Sharma Electronics
-            </button>
-            <button
-              type="button"
-              className="modal-btn-secondary"
-              style={{ fontSize: '11px', padding: '6px 8px', textAlign: 'center' }}
-              onClick={() => handleQuickLogin('9820033333', 'tradetrust')}
-              disabled={loading}
-            >
-              Seliya Stationary
-            </button>
-            <button
-              type="button"
-              className="modal-btn-secondary"
-              style={{ fontSize: '11px', padding: '6px 8px', textAlign: 'center' }}
-              onClick={() => handleQuickLogin('9820044444', 'tradetrust')}
-              disabled={loading}
-            >
-              Sankhe Jwells
-            </button>
-          </div>
-        </div>
-
         <div className="login-tabs">
           <button
             type="button"
@@ -234,7 +167,7 @@ export function LoginPage({ initialTab }) {
               <label className="form-label">Phone Number or Trader Card Name</label>
               <input
                 type="text"
-                placeholder="10-digit mobile, Trader Card, or 'Admin'"
+                placeholder="10-digit mobile number, Trader Card, or Admin"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 required
@@ -245,7 +178,7 @@ export function LoginPage({ initialTab }) {
               <label className="form-label">Password</label>
               <input
                 type="password"
-                placeholder="Account password (tradetrust)"
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
