@@ -1,19 +1,34 @@
 import { apiClient, setAuthToken } from './client';
-import { INITIAL_TRADERS } from './mockData';
-import { isLegacyDummy } from '../utils/sanitizeData';
+import { getLocalTradersList, saveTraderOverride } from './traders';
 
 const AUTH_USER_KEY = 'tradetrust_current_user';
+
+export function normalizePhone(p) {
+  if (!p) return '';
+  const digits = String(p).replace(/\D/g, '');
+  return digits.length >= 10 ? digits.slice(-10) : digits;
+}
 
 export function getCurrentUser() {
   const stored = localStorage.getItem(AUTH_USER_KEY);
   if (stored) {
     try {
       const user = JSON.parse(stored);
-      if (isLegacyDummy(user)) {
-        localStorage.removeItem(AUTH_USER_KEY);
-        return null;
+      // Admin is always valid
+      if (user.role === 'ADMIN' || (user.username && user.username.toLowerCase() === 'admin')) {
+        return user;
       }
-      return user;
+      // Check if user exists among active official or registered traders
+      const allTraders = getLocalTradersList();
+      const uId = String(user.id || user.traderId);
+      const uPhone = normalizePhone(user.phone);
+      const matched = allTraders.find(t => String(t.id || t.traderId) === uId || normalizePhone(t.phone) === uPhone);
+      if (matched) {
+        return { ...user, ...matched };
+      }
+      // Stale or nonexistent session
+      localStorage.removeItem(AUTH_USER_KEY);
+      return null;
     } catch {
       localStorage.removeItem(AUTH_USER_KEY);
       return null;
@@ -28,12 +43,6 @@ export function setCurrentUser(user) {
   } else {
     localStorage.removeItem(AUTH_USER_KEY);
   }
-}
-
-export function normalizePhone(p) {
-  if (!p) return '';
-  const digits = String(p).replace(/\D/g, '');
-  return digits.length >= 10 ? digits.slice(-10) : digits;
 }
 
 export const UNIVERSAL_ADMIN_USER = {
@@ -79,8 +88,7 @@ export async function adminLogin({ username, password }) {
     console.warn('[TradeTrust] Backend admin login attempt:', err);
   }
 
-  // 2. Universal hardcoded check (Active across all devices and static Vercel deployments)
-  // Username: Admin (case-insensitive), Password: tradetrust
+  // 2. Universal credential check (Username: Admin, Password: tradetrust)
   if (cleanUser.toLowerCase() === 'admin') {
     if (cleanPass === 'tradetrust') {
       const token = 'tt-admin-session-' + Date.now();
@@ -94,7 +102,7 @@ export async function adminLogin({ username, password }) {
     } else {
       return {
         success: false,
-        message: 'Invalid Admin password. The active universal password is "tradetrust". (All prior admin accounts have been removed).'
+        message: 'Invalid Admin password. The active universal password is "tradetrust".'
       };
     }
   }
@@ -110,7 +118,7 @@ export async function login({ phone, password }) {
   const cleanPhone = normalizePhone(phone);
   const cleanPass = (password || '').trim();
 
-  // 0. Universal Admin check on general login form (works seamlessly from any device)
+  // 0. Universal Admin check on general login form
   if (rawInput.toLowerCase() === 'admin') {
     return adminLogin({ username: rawInput, password: cleanPass });
   }
@@ -136,7 +144,6 @@ export async function login({ phone, password }) {
       };
     }
 
-    // If backend is active and responded with 401 Unauthorized or 400 Bad Request
     if (res && (res.status === 401 || res.status === 400)) {
       return {
         success: false,
@@ -147,13 +154,8 @@ export async function login({ phone, password }) {
     console.warn('[TradeTrust] Backend login attempt error:', err);
   }
 
-  // 2. Seamless Static / Vercel fallback (when backend server is not running on the static host)
-  let storedTraders = [];
-  try {
-    storedTraders = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
-  } catch {}
-
-  const allAvailable = [...storedTraders, ...INITIAL_TRADERS];
+  // 2. Local fallback against active traders list
+  const allAvailable = getLocalTradersList();
   const authenticatedUser = allAvailable.find(t => {
     const tPhone = normalizePhone(t.phone);
     const tBiz = (t.businessName || '').toLowerCase().trim();
@@ -217,7 +219,6 @@ export async function register(data) {
       };
     }
 
-    // If backend is active and returned 409 Conflict (phone already exists) or 400 Bad Request
     if (res && (res.status === 409 || res.status === 400)) {
       return {
         success: false,
@@ -228,13 +229,13 @@ export async function register(data) {
     console.warn('[TradeTrust] Backend register attempt error:', err);
   }
 
-  // 2. Seamless Static / Vercel fallback
+  // 2. Local fallback: persist to registered traders
   const newTrader = {
     id: Date.now(),
     traderId: Date.now(),
     name: (data.name || '').trim(),
     phone: cleanPhoneNum,
-    password: cleanPass, // Persist password so login checks work seamlessly on Vercel
+    password: cleanPass,
     businessName: (data.businessName || '').trim(),
     businessDesc: (data.businessDesc || '').trim(),
     role: data.role || 'RETAILER',
@@ -248,14 +249,14 @@ export async function register(data) {
   };
 
   try {
-    let storedTraders = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
-    const existingIdx = storedTraders.findIndex(t => normalizePhone(t.phone) === cleanPhoneNum);
+    let registered = JSON.parse(localStorage.getItem('tradetrust_registered_traders') || '[]');
+    const existingIdx = registered.findIndex(t => normalizePhone(t.phone) === cleanPhoneNum);
     if (existingIdx >= 0) {
-      storedTraders[existingIdx] = newTrader;
+      registered[existingIdx] = newTrader;
     } else {
-      storedTraders.unshift(newTrader);
+      registered.unshift(newTrader);
     }
-    localStorage.setItem('tradetrust_traders', JSON.stringify(storedTraders));
+    localStorage.setItem('tradetrust_registered_traders', JSON.stringify(registered));
   } catch {}
 
   const mockToken = 'tt-session-' + Date.now();
@@ -291,16 +292,7 @@ export async function updateCurrentUser(updates) {
       const current = getCurrentUser() || {};
       const updated = { ...current, ...res.data };
       setCurrentUser(updated);
-
-      try {
-        const stored = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
-        const idx = stored.findIndex(t => String(t.id || t.traderId) === String(updated.id || updated.traderId));
-        if (idx >= 0) {
-          stored[idx] = { ...stored[idx], ...res.data };
-          localStorage.setItem('tradetrust_traders', JSON.stringify(stored));
-        }
-      } catch {}
-
+      saveTraderOverride(updated.id || updated.traderId, res.data);
       return {
         success: true,
         data: updated
@@ -311,15 +303,7 @@ export async function updateCurrentUser(updates) {
   const current = getCurrentUser() || {};
   const updated = { ...current, ...updates };
   setCurrentUser(updated);
-
-  try {
-    const stored = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
-    const idx = stored.findIndex(t => String(t.id || t.traderId) === String(updated.id || updated.traderId));
-    if (idx >= 0) {
-      stored[idx] = { ...stored[idx], ...updates };
-      localStorage.setItem('tradetrust_traders', JSON.stringify(stored));
-    }
-  } catch {}
+  saveTraderOverride(updated.id || updated.traderId, updates);
 
   return {
     success: true,

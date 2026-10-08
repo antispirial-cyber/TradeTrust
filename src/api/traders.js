@@ -1,7 +1,67 @@
 import { apiClient } from './client';
 import { INITIAL_TRADERS } from './mockData';
-import { normalizePhone } from './auth';
-import { isLegacyDummy } from '../utils/sanitizeData';
+
+// Retrieves all registered traders created by users on this client
+export function getRegisteredTraders() {
+  try {
+    const raw = localStorage.getItem('tradetrust_registered_traders');
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+// Retrieves any runtime overrides (score updates, freeze state, verification badges)
+export function getTraderOverrides() {
+  try {
+    const raw = localStorage.getItem('tradetrust_trader_overrides');
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+// Saves a runtime override for a trader (e.g. admin score adjustment, freeze toggle)
+export function saveTraderOverride(traderId, fieldUpdates) {
+  try {
+    const overrides = getTraderOverrides();
+    const idKey = String(traderId);
+    overrides[idKey] = {
+      ...(overrides[idKey] || {}),
+      ...fieldUpdates
+    };
+    localStorage.setItem('tradetrust_trader_overrides', JSON.stringify(overrides));
+  } catch {}
+}
+
+// Combines official seed traders from mockData with registered users and applies runtime overrides
+export function getLocalTradersList() {
+  const registered = getRegisteredTraders();
+  const overrides = getTraderOverrides();
+
+  // Master list: official mock accounts + genuine user registrations
+  const all = [...INITIAL_TRADERS, ...registered];
+
+  return all.map(t => {
+    const id = t.id || t.traderId;
+    const patch = overrides[String(id)] || overrides[Number(id)] || {};
+    const finalScore = patch.trustScore != null
+      ? Number(patch.trustScore)
+      : (t.trustScore != null ? Number(t.trustScore) : 10.0);
+
+    return {
+      ...t,
+      ...patch,
+      id: id,
+      traderId: id,
+      trustScore: Number(finalScore.toFixed(2)),
+      scoreFrozen: patch.scoreFrozen !== undefined ? patch.scoreFrozen : (t.scoreFrozen || false),
+      isScoreFrozen: patch.scoreFrozen !== undefined ? patch.scoreFrozen : (t.isScoreFrozen || false),
+      isVerifiedBadge: patch.isVerifiedBadge !== undefined ? patch.isVerifiedBadge : (t.isVerifiedBadge || false),
+      initial: t.initial || (t.name ? t.name[0] : (t.businessName ? t.businessName[0] : 'T'))
+    };
+  });
+}
 
 export async function getTraders({ cluster, sector, role, search } = {}) {
   const params = new URLSearchParams();
@@ -13,39 +73,24 @@ export async function getTraders({ cluster, sector, role, search } = {}) {
   const query = params.toString();
   const url = query ? `/api/traders?${query}` : '/api/traders';
 
-  const res = await apiClient(url);
-  if (res.success && Array.isArray(res.data)) {
-    // Ensure id field is always set
-    const list = res.data.map(t => ({
-      ...t,
-      id: t.id || t.traderId,
-      initial: t.name ? t.name[0] : (t.businessName ? t.businessName[0] : 'T')
-    }));
-    return {
-      success: true,
-      data: list
-    };
-  }
-
-  // Graceful fallback to mock data + stored registered traders if backend not reachable
-  let stored = [];
   try {
-    stored = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
+    const res = await apiClient(url);
+    if (res.success && Array.isArray(res.data)) {
+      const list = res.data.map(t => ({
+        ...t,
+        id: t.id || t.traderId,
+        initial: t.name ? t.name[0] : (t.businessName ? t.businessName[0] : 'T')
+      }));
+      return {
+        success: true,
+        data: list
+      };
+    }
   } catch {}
-  stored = stored.filter(t => !isLegacyDummy(t));
-  const storedIds = new Set(stored.map(t => String(t.id || t.traderId)).filter(Boolean));
-  const phoneSet = new Set(stored.map(t => normalizePhone(t.phone)).filter(Boolean));
-  const combined = [
-    ...stored,
-    ...INITIAL_TRADERS.filter(t => !storedIds.has(String(t.id || t.traderId)) && (!t.phone || !phoneSet.has(normalizePhone(t.phone))))
-  ].map(t => ({
-    ...t,
-    id: t.id || t.traderId,
-    trustScore: Number(Number(t.trustScore != null ? t.trustScore : 10).toFixed(2)),
-    initial: t.initial || (t.name ? t.name[0] : (t.businessName ? t.businessName[0] : 'T'))
-  }));
 
-  let results = [...combined];
+  // Fallback to local traders list (official mock data + registered traders + overrides)
+  let results = getLocalTradersList();
+
   if (cluster && cluster !== 'All Clusters') {
     results = results.filter(t => t.cluster && t.cluster.toLowerCase() === cluster.toLowerCase());
   }
@@ -63,6 +108,7 @@ export async function getTraders({ cluster, sector, role, search } = {}) {
       (t.phone && t.phone.includes(q))
     );
   }
+
   results.sort((a, b) => (Number(b.trustScore) || 0) - (Number(a.trustScore) || 0));
   return {
     success: true,
@@ -87,36 +133,12 @@ export async function getTraderById(id) {
     }
   } catch {}
 
-  // Fallback to mock / stored custom traders
-  let stored = [];
-  try {
-    stored = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
-  } catch {}
-  stored = stored.filter(t => !isLegacyDummy(t));
-
-  const fromStored = stored.find(t => String(t.id || t.traderId) === String(id));
-  if (fromStored) {
+  const all = getLocalTradersList();
+  const found = all.find(t => String(t.id || t.traderId) === String(id));
+  if (found) {
     return {
       success: true,
-      data: {
-        ...fromStored,
-        id: fromStored.id || fromStored.traderId,
-        trustScore: Number(Number(fromStored.trustScore != null ? fromStored.trustScore : 10).toFixed(2)),
-        initial: fromStored.initial || (fromStored.name ? fromStored.name[0] : (fromStored.businessName ? fromStored.businessName[0] : 'T'))
-      }
-    };
-  }
-
-  const fromInitial = INITIAL_TRADERS.find(t => String(t.id || t.traderId) === String(id));
-  if (fromInitial) {
-    return {
-      success: true,
-      data: {
-        ...fromInitial,
-        id: fromInitial.id || fromInitial.traderId,
-        trustScore: Number(Number(fromInitial.trustScore != null ? fromInitial.trustScore : 10).toFixed(2)),
-        initial: fromInitial.initial || (fromInitial.name ? fromInitial.name[0] : (fromInitial.businessName ? fromInitial.businessName[0] : 'T'))
-      }
+      data: found
     };
   }
 
@@ -128,18 +150,24 @@ export async function getTraderById(id) {
 }
 
 export async function updateTrader(id, updates) {
-  const res = await apiClient('/api/trader/profile', {
-    method: 'POST',
-    body: updates
-  });
-  if (res.success) {
-    return {
-      success: true,
-      data: res.data
-    };
-  }
+  try {
+    const res = await apiClient('/api/trader/profile', {
+      method: 'POST',
+      body: updates
+    });
+    if (res.success && res.data) {
+      return {
+        success: true,
+        data: res.data
+      };
+    }
+  } catch {}
+
+  // Local fallback: record the update in trader overrides
+  saveTraderOverride(id, updates);
+  const updatedTrader = (await getTraderById(id)).data || updates;
   return {
-    success: false,
-    message: res.message || 'Failed to update trader'
+    success: true,
+    data: updatedTrader
   };
 }

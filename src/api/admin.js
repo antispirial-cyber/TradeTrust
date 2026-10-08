@@ -1,7 +1,6 @@
 import { apiClient } from './client';
-import { INITIAL_TRADERS } from './mockData';
-import { normalizePhone } from './auth';
 import { getAllComplaints } from './complaints';
+import { getLocalTradersList, saveTraderOverride } from './traders';
 
 export async function getAdminMetrics() {
   try {
@@ -16,18 +15,8 @@ export async function getAdminMetrics() {
     console.warn('[TradeTrust] Backend admin metrics error:', err);
   }
 
-  // Fallback computation from local store + mock data
-  let storedTraders = [];
-  try {
-    storedTraders = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
-  } catch {}
-
-  const storedIds = new Set(storedTraders.map(t => String(t.id || t.traderId)).filter(Boolean));
-  const phoneSet = new Set(storedTraders.map(t => normalizePhone(t.phone)).filter(Boolean));
-  const allTraders = [
-    ...storedTraders,
-    ...INITIAL_TRADERS.filter(t => !storedIds.has(String(t.id || t.traderId)) && !phoneSet.has(normalizePhone(t.phone)))
-  ];
+  // Fallback computation from unified local traders list
+  const allTraders = getLocalTradersList();
 
   const complaintsRes = await getAllComplaints();
   const allComplaints = complaintsRes.data || [];
@@ -35,7 +24,8 @@ export async function getAdminMetrics() {
   const pendingComplaints = allComplaints.filter(c =>
     c.status === 'ESCALATED_TO_ADMIN' ||
     c.status === 'ROUND_1_PENDING' ||
-    c.status === 'ROUND_2_PENDING'
+    c.status === 'ROUND_2_PENDING' ||
+    c.status === 'RETAKE_REQUESTED'
   ).length;
 
   const frozenTraders = allTraders.filter(t => t.scoreFrozen || t.isScoreFrozen).length;
@@ -61,7 +51,7 @@ export async function getAdminMetrics() {
 }
 
 export async function resolveDispute(complaintId, resolution) {
-  // resolution: 'APPROVED' or 'REJECTED'
+  // resolution: 'APPROVED', 'REJECTED', or 'RETAKE_APPROVED'
   try {
     const res = await apiClient(`/api/admin/complaint/${complaintId}/resolve`, {
       method: 'POST',
@@ -75,7 +65,7 @@ export async function resolveDispute(complaintId, resolution) {
     console.warn('[TradeTrust] Backend resolveDispute error:', err);
   }
 
-  // Fallback update in local storage + in-memory sync
+  // Fallback update in local storage
   return applyDisputeResolutionLocal(complaintId, resolution);
 }
 
@@ -94,19 +84,15 @@ function applyDisputeResolutionLocal(complaintId, resolution) {
     previousStatus = stored[idx].status;
     stored[idx].status = resolution;
     stored[idx].verdictDate = new Date().toISOString().split('T')[0];
-    reportedTraderId = stored[idx].reportedId || stored[idx].traderId || stored[idx].reportedTraderId;
+    reportedTraderId = stored[idx].reportedId || stored[idx].traderId;
     reportedName = stored[idx].reportedName;
     localStorage.setItem('tradetrust_complaints', JSON.stringify(stored));
   }
 
-  // If reportedTraderId is still null, try finding trader by reportedName
+  // If reportedTraderId is still null, look up trader by reportedName
   if (!reportedTraderId && reportedName) {
     const qName = reportedName.toLowerCase().trim();
-    let storedTraders = [];
-    try {
-      storedTraders = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
-    } catch {}
-    const match = [...storedTraders, ...INITIAL_TRADERS].find(t =>
+    const match = getLocalTradersList().find(t =>
       (t.businessName && t.businessName.toLowerCase().trim() === qName) ||
       (t.name && t.name.toLowerCase().trim() === qName)
     );
@@ -234,107 +220,23 @@ export async function broadcastNotice({ title, message, cluster = 'All Clusters'
 }
 
 function adjustTraderScoreLocal(traderId, delta) {
-  let stored = [];
-  try {
-    stored = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
-  } catch {}
-
-  let targetScore = null;
-  const idx = stored.findIndex(t => String(t.id || t.traderId) === String(traderId));
-  if (idx >= 0) {
-    const current = Number(stored[idx].trustScore != null ? stored[idx].trustScore : 10.0);
-    targetScore = Math.max(0, Math.min(10, Number((current + delta).toFixed(2))));
-    stored[idx].trustScore = targetScore;
-    stored[idx].isScoreFrozen = false;
-    stored[idx].scoreFrozen = false;
-    localStorage.setItem('tradetrust_traders', JSON.stringify(stored));
-  } else {
-    // If seed trader, clone to stored with adjustment
-    let seed = INITIAL_TRADERS.find(t => String(t.id || t.traderId) === String(traderId));
-    if (!seed) {
-      seed = INITIAL_TRADERS.find(t =>
-        (t.phone && String(t.phone) === String(traderId)) ||
-        (t.businessName && t.businessName.toLowerCase() === String(traderId).toLowerCase())
-      );
-    }
-    if (seed) {
-      const current = Number(seed.trustScore != null ? seed.trustScore : 10.0);
-      targetScore = Math.max(0, Math.min(10, Number((current + delta).toFixed(2))));
-      const updated = {
-        ...seed,
-        id: seed.id || seed.traderId,
-        trustScore: targetScore,
-        isScoreFrozen: false,
-        scoreFrozen: false
-      };
-      stored.unshift(updated);
-      localStorage.setItem('tradetrust_traders', JSON.stringify(stored));
-    }
-  }
-
-  // Also update in-memory INITIAL_TRADERS reference so all modules reading it see updated score immediately
-  const memSeed = INITIAL_TRADERS.find(t =>
-    String(t.id || t.traderId) === String(traderId) ||
-    (t.phone && String(t.phone) === String(traderId)) ||
-    (t.businessName && t.businessName.toLowerCase() === String(traderId).toLowerCase())
-  );
-  if (memSeed && targetScore != null) {
-    memSeed.trustScore = targetScore;
-    memSeed.isScoreFrozen = false;
-    memSeed.scoreFrozen = false;
-  }
-
-  // Also sync tradetrust_current_user if the logged in user is the penalized trader
-  try {
-    const currentUser = JSON.parse(localStorage.getItem('tradetrust_current_user') || 'null');
-    if (currentUser && (
-      String(currentUser.id || currentUser.traderId) === String(traderId) ||
-      (currentUser.phone && String(currentUser.phone) === String(traderId))
-    )) {
-      if (targetScore != null) {
-        currentUser.trustScore = targetScore;
-      }
-      currentUser.isScoreFrozen = false;
-      currentUser.scoreFrozen = false;
-      localStorage.setItem('tradetrust_current_user', JSON.stringify(currentUser));
-    }
-  } catch {}
-
-  // Dispatch events so open tabs and components update live
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('tradetrust_score_updated', {
-      detail: { traderId, newScore: targetScore, delta }
-    }));
-    window.dispatchEvent(new Event('storage'));
+  const all = getLocalTradersList();
+  const trader = all.find(t => String(t.id || t.traderId) === String(traderId));
+  if (trader) {
+    const current = Number(trader.trustScore != null ? trader.trustScore : 10.0);
+    const targetScore = Math.max(0, Math.min(10, Number((current + delta).toFixed(2))));
+    updateTraderFieldLocal(traderId, {
+      trustScore: targetScore,
+      scoreFrozen: false,
+      isScoreFrozen: false
+    });
   }
 }
 
 function updateTraderFieldLocal(traderId, fields) {
-  let stored = [];
-  try {
-    stored = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
-  } catch {}
+  saveTraderOverride(traderId, fields);
 
-  const idx = stored.findIndex(t => String(t.id || t.traderId) === String(traderId));
-  if (idx >= 0) {
-    stored[idx] = { ...stored[idx], ...fields };
-    localStorage.setItem('tradetrust_traders', JSON.stringify(stored));
-  } else {
-    const seed = INITIAL_TRADERS.find(t => String(t.id || t.traderId) === String(traderId));
-    if (seed) {
-      const updated = { ...seed, id: seed.id || seed.traderId, ...fields };
-      stored.unshift(updated);
-      localStorage.setItem('tradetrust_traders', JSON.stringify(stored));
-    }
-  }
-
-  // Also update in-memory INITIAL_TRADERS
-  const memSeed = INITIAL_TRADERS.find(t => String(t.id || t.traderId) === String(traderId));
-  if (memSeed) {
-    Object.assign(memSeed, fields);
-  }
-
-  // Also update current user if matching
+  // Sync current user session if it matches the modified trader
   try {
     const currentUser = JSON.parse(localStorage.getItem('tradetrust_current_user') || 'null');
     if (currentUser && String(currentUser.id || currentUser.traderId) === String(traderId)) {
@@ -343,6 +245,7 @@ function updateTraderFieldLocal(traderId, fields) {
     }
   } catch {}
 
+  // Dispatch events so components and open tabs re-render live
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('tradetrust_score_updated', {
       detail: { traderId, fields }

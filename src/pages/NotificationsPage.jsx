@@ -62,7 +62,7 @@ export function NotificationsPage() {
   const handleQuickDemoLogin = async () => {
     setSigningIn(true);
     try {
-      const res = await login({ phone: '9820111111', password: 'tradetrust' });
+      const res = await login({ phone: '9820011111', password: 'tradetrust' });
       if (res.success) {
         showToast('Signed in as Rajpurohit Bangles');
       } else {
