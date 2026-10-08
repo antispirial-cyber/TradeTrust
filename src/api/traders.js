@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 import { INITIAL_TRADERS } from './mockData';
 import { normalizePhone } from './auth';
+import { isLegacyDummy } from '../utils/sanitizeData';
 
 export async function getTraders({ cluster, sector, role, search } = {}) {
   const params = new URLSearchParams();
@@ -31,6 +32,7 @@ export async function getTraders({ cluster, sector, role, search } = {}) {
   try {
     stored = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
   } catch {}
+  stored = stored.filter(t => !isLegacyDummy(t));
   const storedIds = new Set(stored.map(t => String(t.id || t.traderId)).filter(Boolean));
   const phoneSet = new Set(stored.map(t => normalizePhone(t.phone)).filter(Boolean));
   const combined = [
@@ -90,6 +92,7 @@ export async function getTraderById(id) {
   try {
     stored = JSON.parse(localStorage.getItem('tradetrust_traders') || '[]');
   } catch {}
+  stored = stored.filter(t => !isLegacyDummy(t));
 
   const fromStored = stored.find(t => String(t.id || t.traderId) === String(id));
   if (fromStored) {

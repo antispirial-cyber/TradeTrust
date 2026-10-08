@@ -1,5 +1,6 @@
 import { apiClient, setAuthToken } from './client';
 import { INITIAL_TRADERS } from './mockData';
+import { isLegacyDummy } from '../utils/sanitizeData';
 
 const AUTH_USER_KEY = 'tradetrust_current_user';
 
@@ -7,7 +8,12 @@ export function getCurrentUser() {
   const stored = localStorage.getItem(AUTH_USER_KEY);
   if (stored) {
     try {
-      return JSON.parse(stored);
+      const user = JSON.parse(stored);
+      if (isLegacyDummy(user)) {
+        localStorage.removeItem(AUTH_USER_KEY);
+        return null;
+      }
+      return user;
     } catch {
       localStorage.removeItem(AUTH_USER_KEY);
       return null;
