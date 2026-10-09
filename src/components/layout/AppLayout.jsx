@@ -13,7 +13,7 @@ export function AppLayout() {
   const refreshUnreadCount = async () => {
     try {
       const res = await getNotifications();
-      if (res.success) {
+      if (res.success && res.unreadCount !== undefined) {
         setUnreadCount(res.unreadCount);
       }
     } catch {
@@ -23,8 +23,27 @@ export function AppLayout() {
 
   useEffect(() => {
     refreshUnreadCount();
+
+    const handleNotifUpdate = (e) => {
+      if (e?.detail?.unreadCount !== undefined) {
+        setUnreadCount(e.detail.unreadCount);
+      } else {
+        refreshUnreadCount();
+      }
+    };
+
+    window.addEventListener('tradetrust_notifications_updated', handleNotifUpdate);
+    window.addEventListener('storage', refreshUnreadCount);
+    window.addEventListener('focus', refreshUnreadCount);
+
     const interval = setInterval(refreshUnreadCount, 5000);
-    return () => clearInterval(interval);
+
+    return () => {
+      window.removeEventListener('tradetrust_notifications_updated', handleNotifUpdate);
+      window.removeEventListener('storage', refreshUnreadCount);
+      window.removeEventListener('focus', refreshUnreadCount);
+      clearInterval(interval);
+    };
   }, []);
 
   return (

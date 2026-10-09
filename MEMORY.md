@@ -32,7 +32,7 @@
   1. **Full Stack Java Technologies (FSJT)**: Multi-tier Client-Server Architecture, Jakarta Servlets (`HttpServlet`, `init`, `doGet`, `doPost`, `destroy`), raw 7-step JDBC with `PreparedStatement`, MySQL relational database schema, RESTful JSON communication, multipart file upload processing.
   2. **Entrepreneurship Development**: Commercial trust mechanics, uncollateralized credit risk in informal trade clusters, bazaar mediation.
 - **Presentation Target:** Both database and application run on the same local machine during the course demonstration.
-- **Dual-Mode Operating Capability:** The project runs in **Full-Stack Mode** (Java 17 + Tomcat + MySQL on localhost) with a **Zero-Configuration Fallback** (Vite + React + LocalStorage fallback) to ensure accessibility on preview links (such as Vercel).
+- **Dual-Mode Operating Capability:** The project runs in **Full-Stack Mode** (Java 17 + Tomcat + MySQL on localhost) with a **Zero-Configuration Fallback** (Vite + React + LocalStorage fallback) to ensure accessibility on preview links (such as Vercel: https://trade-trust.vercel.app).
 
 ---
 
@@ -398,3 +398,11 @@ Be ready to explain the following during the presentation:
    - **Sidebar Footer Layout & Overlap Fix:** Refactored `.sidebar-footer` in `Sidebar.css` from a single crowded horizontal row into a clean vertical column layout (`flex-direction: column; width: 100%; gap: var(--space-sm);`). Auth buttons now occupy a full-width grid (`.sidebar-auth-grid`, 50/50 split), and "Terms • Contact" sits cleanly underneath in `.sidebar-links-row`, eliminating button squishing, vertical text wrapping, and visual collision.
    - **Clean Semantic CSS Classes:** Replaced fragile inline button styles in `Navbar.jsx`, `Sidebar.jsx`, `BrowsePage.jsx`, `DashboardPage.jsx`, `NotificationsPage.jsx`, and `AdminPage.jsx` with dedicated classes (`.navbar-login-btn`, `.navbar-register-btn`, `.sidebar-login-btn`, `.sidebar-register-btn`).
    - **Modal Layout Polish:** Added consistent `24px` padding to the score adjustment modal card in `AdminPage.jsx` for clean visual spacing.
+
+7. **Dynamic Notification System & Full Cross-Tab Reactivity:**
+   - **Notification Bug Root Cause Resolution:** Fixed `markAllNotificationsRead` and `markNotificationRead` in `src/api/notifications.js` which previously returned an empty array `data: []` without persisting `isRead = true` to `localStorage`. The function now marks items read directly in persistent storage, preserves the notification list in the UI, and calculates `unreadCount = 0`.
+   - **Instant Real-Time Broadcasting:** Implemented `tradetrust_notifications_updated` custom event and wired it to `AppLayout`, `NotificationsPage`, `Navbar`, and `Sidebar`, eliminating the 5-second polling lag so badges update to 0 with zero delay.
+   - **Dynamic Filtering & Actions:** Added "Clear all" action and "All / Unread" filter toggle in `NotificationsPage.jsx`, with optimistic UI state updates for immediate user feedback.
+   - **Cross-Component Events:** Integrated automatic notification creation and dispatched `tradetrust_complaints_updated` when disputes are filed, retakes are requested, or association arbitration verdicts are rendered.
+   - **Official Deployment Link:** Documented official preview deployment URL as `https://trade-trust.vercel.app`.
+

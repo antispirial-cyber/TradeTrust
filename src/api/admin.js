@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 import { getAllComplaints } from './complaints';
 import { getLocalTradersList, saveTraderOverride } from './traders';
+import { addNotification } from './notifications';
 
 export async function getAdminMetrics() {
   try {
@@ -125,6 +126,12 @@ function applyDisputeResolutionLocal(complaintId, resolution) {
   // Emit association verdict notification
   emitVerdictNotification(complaintId, resolution);
 
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('tradetrust_complaints_updated', {
+      detail: { complaintId, resolution }
+    }));
+  }
+
   let msg = `Dispute #${complaintId} has been resolved as ${resolution}.`;
   if (resolution === 'APPROVED') {
     msg = `Dispute #${complaintId} approved. Score penalty (-1.50) applied.`;
@@ -198,20 +205,14 @@ export async function setTraderCustomScore(traderId, newScore) {
 }
 
 export async function broadcastNotice({ title, message, cluster = 'All Clusters' }) {
-  const newNotif = {
+  addNotification({
     id: 'broadcast-' + Date.now(),
     type: 'platform_broadcast',
     message: `[Association Circular - ${cluster}] ${title}: ${message}`,
     linkRef: '/browse',
     isRead: false,
     timestamp: 'Just now'
-  };
-
-  try {
-    let notifs = JSON.parse(localStorage.getItem('tradetrust_notifications') || '[]');
-    notifs.unshift(newNotif);
-    localStorage.setItem('tradetrust_notifications', JSON.stringify(notifs));
-  } catch {}
+  });
 
   return {
     success: true,
@@ -255,18 +256,12 @@ function updateTraderFieldLocal(traderId, fields) {
 }
 
 function emitVerdictNotification(complaintId, resolution) {
-  const notif = {
+  addNotification({
     id: 'verdict-' + Date.now(),
     type: 'admin_verdict',
     message: `Market Association Arbitration Verdict on Case #${complaintId}: Dispute has been marked ${resolution}.`,
     linkRef: '/admin',
     isRead: false,
     timestamp: 'Just now'
-  };
-
-  try {
-    let notifs = JSON.parse(localStorage.getItem('tradetrust_notifications') || '[]');
-    notifs.unshift(notif);
-    localStorage.setItem('tradetrust_notifications', JSON.stringify(notifs));
-  } catch {}
+  });
 }

@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 import { getCurrentUser } from './auth';
 import { getLocalTradersList } from './traders';
+import { addNotification } from './notifications';
 
 // No dummy complaints - clean slate for the four official accounts
 export const INITIAL_ADMIN_COMPLAINTS = [];
@@ -152,6 +153,19 @@ export async function fileComplaint({ reportedId, description, amountDisputed, i
     localStorage.setItem('tradetrust_complaints', JSON.stringify(complaints));
   } catch {}
 
+  addNotification({
+    type: 'complaint_filed',
+    message: `Dispute filed against ${reportedName || ('Trader #' + reportedId)}. Escalated to Market Association Desk.`,
+    linkRef: '/dashboard?tab=disputes'
+  });
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('tradetrust_complaints_updated', {
+      detail: { action: 'filed', complaint: newComplaint }
+    }));
+    window.dispatchEvent(new Event('storage'));
+  }
+
   return {
     success: true,
     data: newComplaint,
@@ -191,4 +205,17 @@ function updateComplaintStatusLocal(complaintId, status) {
       localStorage.setItem('tradetrust_complaints', JSON.stringify(complaints));
     }
   } catch {}
+
+  addNotification({
+    type: 'retake_requested',
+    message: `Retake requested for Dispute Case #${complaintId}. Awaiting Market Association Admin review.`,
+    linkRef: '/dashboard?tab=disputes'
+  });
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('tradetrust_complaints_updated', {
+      detail: { complaintId, status }
+    }));
+    window.dispatchEvent(new Event('storage'));
+  }
 }

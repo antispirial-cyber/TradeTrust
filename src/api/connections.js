@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import { getTraderById, updateTrader } from './traders';
+import { addNotification } from './notifications';
 
 export async function toggleConnectTrader(traderId) {
   const result = await getTraderById(traderId);
@@ -28,6 +29,11 @@ export async function toggleConnectTrader(traderId) {
       body: { targetTraderId: Number(traderId) }
     });
     if (res.success) {
+      addNotification({
+        type: 'connection_accepted',
+        message: `Connected with ${result.data.businessName || ('Trader #' + traderId)} on Bazaar Connect.`,
+        linkRef: '/browse'
+      });
       return {
         success: true,
         data: {
@@ -40,5 +46,12 @@ export async function toggleConnectTrader(traderId) {
 
   // Local fallback
   const nextStatus = isCurrentlyConnected ? 'not_connected' : 'connected';
+  if (nextStatus === 'connected') {
+    addNotification({
+      type: 'connection_accepted',
+      message: `Connected with ${result.data.businessName || ('Trader #' + traderId)} on Bazaar Connect.`,
+      linkRef: '/browse'
+    });
+  }
   return updateTrader(traderId, { connectionStatus: nextStatus });
 }

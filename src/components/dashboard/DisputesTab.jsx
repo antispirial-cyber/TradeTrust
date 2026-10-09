@@ -36,6 +36,22 @@ export function DisputesTab() {
 
   useEffect(() => {
     loadComplaints();
+
+    const handleUpdate = () => {
+      loadComplaints();
+    };
+
+    window.addEventListener('tradetrust_complaints_updated', handleUpdate);
+    window.addEventListener('tradetrust_score_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    window.addEventListener('focus', handleUpdate);
+
+    return () => {
+      window.removeEventListener('tradetrust_complaints_updated', handleUpdate);
+      window.removeEventListener('tradetrust_score_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+      window.removeEventListener('focus', handleUpdate);
+    };
   }, [user]);
 
   const handleRetake = async (complaintId) => {
