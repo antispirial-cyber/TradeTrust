@@ -1,7 +1,9 @@
 node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
 backend/target/
 backend/uploads/
 uploads/
 .DS_Store
 *.log
-Java_Class_notes.pdf

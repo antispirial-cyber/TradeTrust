@@ -1,23 +1,22 @@
 package com.tradetrust.servlet;
 
-import com.tradetrust.util.JsonUtil;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
-import java.time.Instant;
 import java.util.Map;
 
-@WebServlet("/api/ping")
-public class PingServlet extends HttpServlet {
+/**
+ * Health check endpoint for verifying Tomcat and servlet availability.
+ *   GET /api/ping
+ */
+public class PingServlet extends ApiServlet {
+
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        JsonUtil.writeSuccess(resp, "TradeTrust Backend API is online", Map.of(
+    protected void get(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        ok(resp, "TradeTrust Mumbai Bazaar Backend is online", Map.of(
                 "status", "UP",
-                "timestamp", Instant.now().toString(),
-                "bazaar", "Mumbai Trade Network"
+                "service", "TradeTrust Tomcat Servlet Engine",
+                "timestamp", System.currentTimeMillis()
         ));
     }
 }

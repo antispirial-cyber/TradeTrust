@@ -1,0 +1,109 @@
+:root, [data-theme="light"] {
+  color-scheme: light;
+
+  /* Theme Decision Colors - Crisp 2-Tone Canvas with Distinct Boundaries */
+  --bg-primary: #F1F5F9;        /* Cool Slate Canvas: Gives prominent contrast behind white cards */
+  --bg-secondary: #FFFFFF;      /* Clean White Sidebar & Top Navbar */
+  --bg-card: #FFFFFF;           /* Elevated Pure White Cards */
+  --bg-card-hover: #F8FAFC;     /* Soft hover tint */
+  --bg-input: #F1F5F9;          /* Distinct inset wedge for inputs, dropdowns & avatar banners */
+
+  /* Crisp, Well-defined Boundaries & Separations (Never flat or washed out) */
+  --border-color: #CBD5E1;       /* Slate-300: Solid, clearly visible card/panel structural boundaries */
+  --border-subtle: #E2E8F0;      /* Slate-200: Clear interior separation lines */
+  --border-strong: #94A3B8;      /* Slate-400: Active, highlighted boundaries */
+
+  /* High-Contrast Typography */
+  --text-primary: #0F172A;       /* Deep Slate-900: High-contrast, sharp text */
+  --text-secondary: #475569;     /* Slate-600: High-contrast legible metadata */
+  --text-placeholder: #94A3B8;   /* Slate-400 */
+  --text-muted: #64748B;
+  --bg-hover: rgba(0, 0, 0, 0.05);
+  --header-grad: linear-gradient(90deg, rgba(30, 111, 251, 0.08) 0%, rgba(155, 93, 229, 0.08) 100%);
+
+  /* Personal Accent Color */
+  --accent-color: #1E6FFB;
+  --accent-blue: #1E6FFB;
+  --accent-hover: #1656C7;
+  --accent-muted: rgba(30, 111, 251, 0.12);
+
+  /* Status Colors */
+  --status-pending: #F4D35E;
+  --status-success: #2DC653;
+  --status-danger: #D62828;
+  --status-neutral: #8B8FA8;
+
+  /* Score Ring Gradient Stops (Fixed base standards) */
+  --score-0: #D62828;
+  --score-25: #F77F00;
+  --score-50: #F4D35E;
+  --score-75: #90BE6D;
+  --score-100: #2DC653;
+
+  /* Typography */
+  --font-primary: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  /* Type scale */
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-md: 18px;
+  --text-lg: 24px;
+  --text-xl: 32px;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+
+  /* Layout */
+  --sidebar-width: 240px;
+  --navbar-height: 60px;
+  --card-radius: 10px;
+  --input-radius: 6px;
+  --button-radius: 6px;
+  --max-content-width: 1160px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.06);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Theme Decision Colors - Dark Obsidian */
+  --bg-primary: #0F1117;
+  --bg-secondary: #1A1D2E;
+  --bg-card: #202436;
+  --bg-card-hover: #262B40;
+  --bg-input: #121524;
+  --border-color: #2B3048;
+  --border-subtle: #23273C;
+  --border-strong: #3E4566;
+  --text-primary: #F1F3F9;
+  --text-secondary: #8E95AA;
+  --text-placeholder: #565E77;
+  --text-muted: #6B7280;
+  --bg-hover: rgba(255, 255, 255, 0.04);
+  --header-grad: linear-gradient(90deg, rgba(30, 111, 251, 0.08) 0%, rgba(155, 93, 229, 0.08) 100%);
+
+  /* Personal Accent Color */
+  --accent-color: #1E6FFB;
+  --accent-blue: #1E6FFB;
+  --accent-hover: #3B82F6;
+  --accent-muted: rgba(30, 111, 251, 0.15);
+
+  /* Shadows */
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-card-hover: 0 6px 18px rgba(0, 0, 0, 0.45);
+  --shadow-modal: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
